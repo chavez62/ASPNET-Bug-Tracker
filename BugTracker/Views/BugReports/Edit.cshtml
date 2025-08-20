@@ -1,0 +1,83 @@
+﻿@model BugTracker.Models.BugReport
+@using BugTracker.Models.Enums
+
+@{
+    ViewData["Title"] = "Edit Bug Report";
+}
+
+<div class="container-fluid">
+    <h1 class="mb-4">Edit Bug Report #@Model.Id</h1>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CreatedById" />
+        <input type="hidden" asp-for="CreatedDate" />
+
+        <partial name="_Form" model="@Model" />
+
+        <div class="form-group mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Save Changes
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize tag selection with Select2
+        $('#tagSelect').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Select tags...',
+            allowClear: true,
+            ajax: {
+                url: '@Url.Action("GetTags", "Tags")',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        term: params.term
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.map(function(tag) {
+                            return {
+                                id: tag.id,
+                                text: tag.text,
+                                color: tag.color
+                            };
+                        })
+                    };
+                },
+                cache: true
+            },
+            templateResult: function(tag) {
+                if (!tag.id) return tag.text;
+                
+                var $tag = $(
+                    '<span><span class="badge me-2" style="background-color: ' + tag.color + '; color: ' + 
+                    (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' + 
+                    tag.text + '</span></span>'
+                );
+                return $tag;
+            },
+            templateSelection: function(tag) {
+                if (!tag.id) return tag.text;
+                
+                return $(
+                    '<span class="badge me-1" style="background-color: ' + tag.color + '; color: ' + 
+                    (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' + 
+                    tag.text + '</span>'
+                );
+            }
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

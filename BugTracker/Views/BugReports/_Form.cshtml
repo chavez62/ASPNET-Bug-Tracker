@@ -1,0 +1,118 @@
+@model BugTracker.Models.BugReport
+@using BugTracker.Models.Enums
+
+<!-- Basic Information Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-info-circle me-2"></i>Basic Information
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-4">
+            <label asp-for="Title" class="form-label fw-semibold">Title</label>
+            <input asp-for="Title" class="form-control form-control-lg" placeholder="Enter a descriptive title" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+            <div class="form-text">Be specific and clear about the issue</div>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="Description" class="form-label fw-semibold">Description</label>
+            <textarea asp-for="Description" class="form-control" rows="6"
+                      placeholder="Provide detailed steps to reproduce the issue and expected behavior"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+            <div class="form-text">Include any relevant context or background information</div>
+        </div>
+    </div>
+</div>
+
+<!-- Classification Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-tag me-2"></i>Classification
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Severity" class="form-label fw-semibold">Severity</label>
+                <select asp-for="Severity" asp-items="Html.GetEnumSelectList<Severity>()"
+                        class="form-select">
+                    <option value="">-- Select Severity --</option>
+                </select>
+                <span asp-validation-for="Severity" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Status" class="form-label fw-semibold">Status</label>
+                <select asp-for="Status" asp-items="Html.GetEnumSelectList<Status>()"
+                        class="form-select">
+                    <option value="">-- Select Status --</option>
+                </select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Tags</label>
+            <select id="tagSelect" name="SelectedTagIds" multiple class="form-control">
+                @if (Model?.Tags != null)
+                {
+                    @foreach (var tag in Model.Tags)
+                    {
+                        <option value="@tag.Id" selected data-color="@tag.Color">@tag.Name</option>
+                    }
+                }
+            </select>
+            <div class="form-text">Select or create tags to categorize this bug report</div>
+        </div>
+    </div>
+</div>
+
+<!-- Assignment Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-person me-2"></i>Assignment
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <label asp-for="AssignedToId" class="form-label fw-semibold">Assign To</label>
+            <select asp-for="AssignedToId" asp-items="ViewBag.Users"
+                    class="form-select">
+                <option value="">-- Select User --</option>
+            </select>
+            <span asp-validation-for="AssignedToId" class="text-danger"></span>
+        </div>
+
+        @if (ViewBag.Projects != null)
+        {
+            <div class="mb-3">
+                <label asp-for="ProjectId" class="form-label fw-semibold">Project</label>
+                <select asp-for="ProjectId" asp-items="ViewBag.Projects" class="form-select">
+                    <option value="">-- Select Project --</option>
+                </select>
+                <span asp-validation-for="ProjectId" class="text-danger"></span>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Attachments Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-paperclip me-2"></i>Attachments
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Upload Files</label>
+            <input type="file" name="files" multiple class="form-control" />
+            <div class="form-text">
+                Max 5 files. Supported formats: .jpg, .jpeg, .png, .pdf, .txt, .log
+            </div>
+        </div>
+    </div>
+</div>

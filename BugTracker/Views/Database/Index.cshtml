@@ -1,0 +1,297 @@
+@{
+    ViewData["Title"] = "Database Performance";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Database Performance Dashboard</h1>
+        <form asp-action="Optimize" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to optimize the database? This may take a few moments.')">
+                <i class="bi bi-gear-fill me-2"></i>Optimize Database
+            </button>
+        </form>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Database Overview -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Database Size
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @if (ViewBag.DatabaseMetrics != null)
+                                {
+                                    <span>@(ViewBag.DatabaseMetrics.TotalDatabaseSize / 1024 / 1024) MB</span>
+                                }
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-database fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Records -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Records
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @if (ViewBag.DatabaseMetrics != null)
+                                {
+                                    <span>@(ViewBag.DatabaseMetrics.TotalBugReports + ViewBag.DatabaseMetrics.TotalProjects + ViewBag.DatabaseMetrics.TotalUsers)</span>
+                                }
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-table fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Query Performance -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Avg Query Time
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @if (ViewBag.DatabaseMetrics != null)
+                                {
+                                    <span>@(ViewBag.DatabaseMetrics.AverageQueryTime) ms</span>
+                                }
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-speedometer2 fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optimization Status -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Optimization Status
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @if (ViewBag.DatabaseMetrics != null && ViewBag.DatabaseMetrics.IsOptimized)
+                                {
+                                    <span class="text-success">Optimized</span>
+                                }
+                                else
+                                {
+                                    <span class="text-warning">Needs Optimization</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Table Statistics -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Table Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Table</th>
+                                    <th>Records</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.DatabaseMetrics != null)
+                                {
+                                    <tr>
+                                        <td>Bug Reports</td>
+                                        <td>@ViewBag.DatabaseMetrics.TotalBugReports</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Projects</td>
+                                        <td>@ViewBag.DatabaseMetrics.TotalProjects</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Users</td>
+                                        <td>@ViewBag.DatabaseMetrics.TotalUsers</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Attachments</td>
+                                        <td>@ViewBag.DatabaseMetrics.TotalAttachments</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Activity Logs</td>
+                                        <td>@ViewBag.DatabaseMetrics.TotalActivityLogs</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Index Information -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Database Indexes</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Table</th>
+                                    <th>Index</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.IndexInfo != null)
+                                {
+                                    @foreach (var index in ViewBag.IndexInfo)
+                                    {
+                                        <tr>
+                                            <td>@index.TableName</td>
+                                            <td>@index.IndexName</td>
+                                            <td>
+                                                @if (index.IsUnique)
+                                                {
+                                                    <span class="badge bg-success">Unique</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-info">Standard</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slow Queries -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Slow Queries</h6>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.SlowQueries != null && ViewBag.SlowQueries.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Query</th>
+                                        <th>Execution Time</th>
+                                        <th>Last Executed</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var query in ViewBag.SlowQueries)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <code class="small">@query.Query</code>
+                                            </td>
+                                            <td>@query.ExecutionTime ms</td>
+                                            <td>@query.LastExecuted.ToString("yyyy-MM-dd HH:mm")</td>
+                                            <td>@query.ExecutionCount</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No slow queries detected.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-refresh metrics every 30 seconds
+        setInterval(function() {
+            fetch('/Database/GetMetrics')
+                .then(response => response.json())
+                .then(data => {
+                    // Update metrics in real-time
+                    console.log('Metrics updated:', data);
+                })
+                .catch(error => console.error('Error updating metrics:', error));
+        }, 30000);
+    </script>
+}

@@ -1,0 +1,282 @@
+﻿@model BugTracker.Models.BugListViewModel
+@using BugTracker.Models.Enums
+
+@{
+    ViewData["Title"] = "Bug Reports";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Bug Reports</h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Bug Report
+        </a>
+    </div>
+
+    <!-- Search and Filter Panel -->
+    <div class="mb-4">
+        <div class="card-body">
+            <form method="get" id="searchForm" class="row g-3">
+                <!-- Search Bar -->
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search bugs..."
+                               name="SearchTerm" value="@Model.SearchModel.SearchTerm">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="col-md-2">
+                    <select name="Status" class="form-select" asp-items="Html.GetEnumSelectList<Status>()">
+                        <option value="">- Status -</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <select name="Severity" class="form-select" asp-items="Html.GetEnumSelectList<Severity>()">
+                        <option value="">- Severity -</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <select name="AssignedToId" asp-items="ViewBag.Users" class="form-select">
+                        <option value="">- Assignee -</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <select name="SelectedTags" multiple id="tagFilter" class="form-control">
+                        @if (Model.SearchModel.SelectedTags != null)
+                        {
+                            @foreach (var selectedTag in Model.SearchModel.SelectedTags)
+                            {
+                                <option value="@selectedTag" selected>@selectedTag</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Hidden sort fields -->
+                <input type="hidden" name="SortBy" value="@Model.SearchModel.SortBy" id="sortBy">
+                <input type="hidden" name="SortDescending" value="@Model.SearchModel.SortDescending" id="sortDescending">
+                <input type="hidden" name="Page" value="@Model.CurrentPage" id="currentPage">
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div>
+        <div class="card-body">
+            @if (!Model.Bugs.Any())
+            {
+                <div class="text-center py-4">
+                    <h4>No bug reports found</h4>
+                    <p class="text-muted">Try adjusting your search filters or create a new bug report.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Severity</th>
+                                <th>Tags</th>
+                                <th>Assigned To</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var bug in Model.Bugs)
+                            {
+                                <tr>
+                                    <td>@bug.Id</td>
+                                    <td>@bug.Title</td>
+                                    <td>
+                                        <span class="badge bg-@(bug.Status switch {
+                                            Status.Open => "danger",
+                                            Status.InProgress => "warning",
+                                            Status.UnderReview => "info",
+                                            Status.Resolved => "success",
+                                            _ => "secondary"
+                                        })">@bug.Status</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-@(bug.Severity switch {
+                                            Severity.Critical => "danger",
+                                            Severity.High => "warning",
+                                            Severity.Medium => "info",
+                                            _ => "secondary"
+                                        })">@bug.Severity</span>
+                                    </td>
+                                    <td>
+                                        @if (bug.Tags.Any())
+                                        {
+                                            @foreach (var tag in bug.Tags)
+                                            {
+                                                <span class="badge me-1" style="background-color: @tag.Color; color: @(tag.Color == "#FFFFFF" || tag.Color == "#ffffff" ? "#000000" : "#FFFFFF");">
+                                                    @tag.Name
+                                                </span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">No tags</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (bug.AssignedTo != null)
+                                        {
+                                            @if (!string.IsNullOrEmpty(bug.AssignedTo.FirstName) && !string.IsNullOrEmpty(bug.AssignedTo.LastName))
+                                            {
+                                                <span title="@bug.AssignedTo.Email">@bug.AssignedTo.FirstName @bug.AssignedTo.LastName</span>
+                                            }
+                                            else
+                                            {
+                                                @bug.AssignedTo.Email
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Unassigned</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a asp-action="Details" asp-route-id="@bug.Id"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@bug.Id"
+                                               class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            @if (User.IsInRole("Admin"))
+                                            {
+                                                <form asp-action="Delete" asp-route-id="@bug.Id" method="post"
+                                                      style="display: inline;"
+                                                      onsubmit="return confirm('Are you sure you want to delete this bug report?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Bug report navigation">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                                <a class="page-link" href="#" onclick="changePage(@(Model.CurrentPage - 1))">Previous</a>
+                            </li>
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="#" onclick="changePage(@i)">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                                <a class="page-link" href="#" onclick="changePage(@(Model.CurrentPage + 1))">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateSort(column) {
+            const currentSort = $('#sortBy').val();
+            const isDescending = $('#sortDescending').val() === 'true';
+
+            if (currentSort === column) {
+                $('#sortDescending').val(!isDescending);
+            } else {
+                $('#sortBy').val(column);
+                $('#sortDescending').val(false);
+            }
+
+            $('#searchForm').submit();
+        }
+
+        function changePage(page) {
+            $('#currentPage').val(page);
+            $('#searchForm').submit();
+        }
+
+        // Auto-submit form when filters change
+        $(document).ready(function() {
+            $('select:not(#tagFilter)').change(function() {
+                $('#searchForm').submit();
+            });
+
+            // Initialize tag filter with Select2
+            $('#tagFilter').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Filter by tags...',
+                allowClear: true,
+                ajax: {
+                    url: '@Url.Action("GetTags", "Tags")',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            term: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.map(function(tag) {
+                                return {
+                                    id: tag.text,
+                                    text: tag.text,
+                                    color: tag.color
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: function(tag) {
+                    if (!tag.id) return tag.text;
+                    
+                    var $tag = $(
+                        '<span><span class="badge me-2" style="background-color: ' + tag.color + '; color: ' + 
+                        (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' + 
+                        tag.text + '</span></span>'
+                    );
+                    return $tag;
+                },
+                templateSelection: function(tag) {
+                    if (!tag.id) return tag.text;
+                    
+                    return $(
+                        '<span class="badge me-1" style="background-color: ' + tag.color + '; color: ' + 
+                        (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' + 
+                        tag.text + '</span>'
+                    );
+                }
+            }).on('change', function() {
+                $('#searchForm').submit();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,30 @@
+@page
+@model BugTracker.Areas.Identity.Pages.Account.LogoutModel
+@{
+    ViewData["Title"] = "Log out";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="login-card">
+                <div class="text-center mb-4">
+                    <h1 class="login-title">@ViewData["Title"]</h1>
+                    <p class="login-subtitle">You have been logged out</p>
+                </div>
+
+                <div class="text-center">
+                    <p class="mb-4">You have successfully logged out of Bug Tracker.</p>
+                    <div class="d-grid gap-2">
+                        <a asp-page="./Login" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Log in again
+                        </a>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-house me-2"></i>Go to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,52 @@
+﻿@model BugTracker.Models.BugReport
+@using BugTracker.Models.Enums
+
+@{
+    ViewData["Title"] = "Create Bug Report";
+}
+
+<div class="container-fluid py-4 bg-light">
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Bug Reports</a></li>
+                <li class="breadcrumb-item active">Create New</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-0">Create Bug Report @(Model.ProjectId.HasValue ? $"for {ViewBag.ProjectName}" : "")</h1>
+    </div>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+        @* Important: Include the partial view which now properly handles ProjectId *@
+        <partial name="_Form" model="@Model" />
+
+        <!-- Form Actions -->
+        <div class="d-flex gap-2 mb-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle me-2"></i>Create Bug Report
+            </button>
+            @if (Model.ProjectId.HasValue)
+            {
+                <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </a>
+            }
+            else
+            {
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </a>
+            }
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

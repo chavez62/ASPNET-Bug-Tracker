@@ -1,0 +1,343 @@
+﻿@model BugTracker.Models.BugReport
+@using BugTracker.Models.Enums
+
+@{
+    ViewData["Title"] = "Create Bug Report";
+}
+
+<div class="container-fluid py-4 bg-light">
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Bug Reports</a></li>
+                <li class="breadcrumb-item active">Create New</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-0">Create Bug Report @(Model.ProjectId.HasValue ? $"for {ViewBag.ProjectName}" : "")</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <form asp-action="Create" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+                @* Critical: Include hidden ProjectId if it's set *@
+                @if (Model.ProjectId.HasValue)
+                {
+                    <input type="hidden" asp-for="ProjectId" />
+                }
+
+                <!-- Basic Information Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Basic Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label fw-semibold">Title</label>
+                            <input asp-for="Title" class="form-control form-control-lg" placeholder="Enter a descriptive title" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                            <div class="form-text">Be specific and clear about the issue</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-semibold">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="6"
+                                      placeholder="Provide detailed steps to reproduce the issue and expected behavior"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                            <div class="form-text">Include any relevant context or background information</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Classification Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-tag me-2"></i>Classification
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Severity" class="form-label fw-semibold">Severity</label>
+                                <select asp-for="Severity" asp-items="Html.GetEnumSelectList<Severity>()"
+                                        class="form-select">
+                                    <option value="">-- Select Severity --</option>
+                                </select>
+                                <span asp-validation-for="Severity" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Status" class="form-label fw-semibold">Status</label>
+                                <select asp-for="Status" asp-items="Html.GetEnumSelectList<Status>()"
+                                        class="form-select">
+                                    <option value="">-- Select Status --</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tags</label>
+                            <select id="tagSelect" name="SelectedTagIds" multiple class="form-control">
+                                @if (ViewBag.SelectedTagIds != null)
+                                {
+                                    @foreach (var tagId in (List<int>)ViewBag.SelectedTagIds)
+                                    {
+                                        <option value="@tagId" selected>@tagId</option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text">Select or create tags to categorize this bug report</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-person me-2"></i>Assignment
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="AssignedToId" class="form-label fw-semibold">Assign To</label>
+                            <select asp-for="AssignedToId" asp-items="ViewBag.Users"
+                                    class="form-select">
+                                <option value="">-- Select User --</option>
+                            </select>
+                            <span asp-validation-for="AssignedToId" class="text-danger"></span>
+                        </div>
+
+                        @* Only show project dropdown if not already set *@
+                        @if (!Model.ProjectId.HasValue && ViewBag.Projects != null)
+                        {
+                            <div class="mb-3">
+                                <label asp-for="ProjectId" class="form-label fw-semibold">Project</label>
+                                <select asp-for="ProjectId" asp-items="ViewBag.Projects" class="form-select">
+                                    <option value="">-- Select Project --</option>
+                                </select>
+                                <span asp-validation-for="ProjectId" class="text-danger"></span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Attachments Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-paperclip me-2"></i>Attachments
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Upload Files</label>
+                            <input type="file" name="files" multiple class="form-control" />
+                            <div class="form-text">
+                                Max 5 files. Supported formats: .jpg, .jpeg, .png, .pdf, .txt, .log
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>Create Bug Report
+                    </button>
+                    @if (Model.ProjectId.HasValue)
+                    {
+                        <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    }
+                </div>
+            </form>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+            <!-- Help Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-question-circle me-2"></i>Tips for Good Bug Reports
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Be specific in the title
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Include steps to reproduce
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Describe expected vs actual behavior
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Add relevant screenshots or logs
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Choose appropriate severity level
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Severity Guide Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Severity Guide
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="d-flex align-items-center">
+                            <span class="badge bg-danger me-2">Critical</span>
+                        </h6>
+                        <small class="text-muted">System crash, data loss, security issue</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="d-flex align-items-center">
+                            <span class="badge bg-warning me-2">High</span>
+                        </h6>
+                        <small class="text-muted">Major feature broken, significant impact</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="d-flex align-items-center">
+                            <span class="badge bg-info me-2">Medium</span>
+                        </h6>
+                        <small class="text-muted">Minor feature issue, has workaround</small>
+                    </div>
+                    <div>
+                        <h6 class="d-flex align-items-center">
+                            <span class="badge bg-secondary me-2">Low</span>
+                        </h6>
+                        <small class="text-muted">Cosmetic, typo, non-critical issue</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Enable Bootstrap form validation
+        (() => {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+
+        // File input validation
+        document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+            const files = Array.from(this.files);
+            const maxFiles = 5;
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['.jpg', '.jpeg', '.png', '.pdf', '.txt', '.log'];
+
+            let errors = [];
+
+            if (files.length > maxFiles) {
+                errors.push(`Maximum ${maxFiles} files allowed`);
+            }
+
+            files.forEach(file => {
+                if (file.size > maxSize) {
+                    errors.push(`File ${file.name} exceeds 5MB limit`);
+                }
+
+                const ext = '.' + file.name.split('.').pop().toLowerCase();
+                if (!allowedTypes.includes(ext)) {
+                    errors.push(`File type ${ext} is not allowed`);
+                }
+            });
+
+            if (errors.length > 0) {
+                alert(errors.join('\n'));
+                this.value = '';
+            }
+        });
+
+        // Initialize tag selection with Select2
+        $(document).ready(function() {
+            $('#tagSelect').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select tags...',
+                allowClear: true,
+                ajax: {
+                    url: '@Url.Action("GetTags", "Tags")',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            term: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.map(function(tag) {
+                                return {
+                                    id: tag.id,
+                                    text: tag.text,
+                                    color: tag.color
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: function(tag) {
+                    if (!tag.id) return tag.text;
+                    
+                    var $tag = $(
+                        '<span><span class="badge me-2" style="background-color: ' + tag.color + '; color: ' + 
+                        (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' + 
+                        tag.text + '</span></span>'
+                    );
+                    return $tag;
+                },
+                templateSelection: function(tag) {
+                    if (!tag.id) return tag.text;
+                    
+                    return $(
+                        '<span class="badge me-1" style="background-color: ' + tag.color + '; color: ' + 
+                        (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' + 
+                        tag.text + '</span>'
+                    );
+                }
+            });
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
