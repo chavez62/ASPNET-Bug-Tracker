@@ -275,6 +275,8 @@ public class BugService : IBugService
     {
         try
         {
+            searchModel ??= new BugSearchModel();
+
             var query = _context.BugReports
                 .AsNoTracking() // Performance optimization for read-only queries
                 .Include(b => b.AssignedTo)
@@ -384,7 +386,7 @@ public class BugService : IBugService
                 .Include(b => b.CreatedBy)
                 .Include(b => b.Attachments)
                 .Include(b => b.Tags)
-                .Include(b => b.ActivityLogs.OrderByDescending(l => l.Timestamp))
+                .Include(b => b.ActivityLogs)
                     .ThenInclude(log => log.User)
                 .Include(b => b.Project)
                 .FirstOrDefaultAsync(b => b.Id == id);
@@ -393,6 +395,10 @@ public class BugService : IBugService
             {
                 throw new NotFoundException($"Bug report with ID {id} not found");
             }
+
+            bugReport.ActivityLogs = bugReport.ActivityLogs
+                .OrderByDescending(l => l.Timestamp)
+                .ToList();
 
             return bugReport;
         }
@@ -455,9 +461,10 @@ public class BugService : IBugService
         }
     }
 
-    public async Task UpdateBugReportAsync(BugReport bugReport)
+    public async Task UpdateBugReportAsync(BugReport bugReport, string editorUserId)
     {
         if (bugReport == null) throw new ArgumentNullException(nameof(bugReport));
+        if (string.IsNullOrWhiteSpace(editorUserId)) throw new ArgumentException("Editor user ID is required", nameof(editorUserId));
 
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
@@ -480,7 +487,7 @@ public class BugService : IBugService
             {
                 await _activityLogService.LogActivityAsync(
                     bugReport.Id,
-                    bugReport.CreatedById,
+                    editorUserId,
                     "Updated",
                     string.Join(", ", changes)
                 );

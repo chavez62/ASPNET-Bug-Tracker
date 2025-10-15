@@ -32,7 +32,7 @@ namespace BugTracker.Controllers
                 var currentUser = await _userManager.GetUserAsync(User);
                 var projects = User.IsInRole("Admin")
                     ? await _projectService.GetAllProjectsAsync()
-                    : await _projectService.GetUserProjectsAsync(currentUser.Id);
+                    : await _projectService.GetUserProjectsAsync(currentUser.Id ?? string.Empty);
 
                 return View(projects);
             }

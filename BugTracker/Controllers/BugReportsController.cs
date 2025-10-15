@@ -41,7 +41,8 @@ namespace BugTracker.Controllers
         {
             try
             {
-                var pageSize = searchModel?.PageSize ?? 10;
+                searchModel ??= new BugSearchModel();
+                var pageSize = searchModel.PageSize;
                 var result = await _bugService.SearchBugReportsAsync(searchModel, page, pageSize);
                 await PrepareViewBags();
 
@@ -79,7 +80,7 @@ namespace BugTracker.Controllers
 
                 await PrepareViewBags();
                 ViewBag.ValidationRules = _validationService.GetClientValidationRules();
-                
+
                 // Initialize empty selected tags for new bug
                 ViewBag.SelectedTagIds = new List<int>();
 
@@ -187,7 +188,7 @@ namespace BugTracker.Controllers
 
                 await PrepareViewBags();
                 ViewBag.ValidationRules = _validationService.GetClientValidationRules();
-                
+
                 // Set selected tags for the dropdown
                 ViewBag.SelectedTagIds = bugReport.Tags.Select(t => t.Id).ToList();
 
@@ -225,12 +226,12 @@ namespace BugTracker.Controllers
                 var existingBug = await _context.BugReports
                     .Include(b => b.Tags)
                     .FirstOrDefaultAsync(b => b.Id == id);
-                
+
                 if (existingBug != null)
                 {
                     // Clear existing tags
                     existingBug.Tags.Clear();
-                    
+
                     // Add selected tags
                     if (SelectedTagIds != null && SelectedTagIds.Any())
                     {
@@ -242,11 +243,17 @@ namespace BugTracker.Controllers
                             existingBug.Tags.Add(tag);
                         }
                     }
-                    
+
                     await _context.SaveChangesAsync();
                 }
 
-                await _bugService.UpdateBugReportAsync(bugReport);
+                var editorUserId = _userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(editorUserId))
+                {
+                    return Challenge();
+                }
+
+                await _bugService.UpdateBugReportAsync(bugReport, editorUserId);
 
                 return RedirectToAction(nameof(Details), new { id = bugReport.Id });
             }

@@ -26,6 +26,7 @@ namespace BugTracker.Services
         public async Task<IEnumerable<Project>> GetAllProjectsAsync()
         {
             return await _context.Projects
+                .AsNoTracking()
                 .Include(p => p.Manager)
                 .Include(p => p.TeamMembers)
                 .Include(p => p.BugReports)
@@ -36,6 +37,7 @@ namespace BugTracker.Services
         public async Task<IEnumerable<Project>> GetUserProjectsAsync(string userId)
         {
             return await _context.Projects
+                .AsNoTracking()
                 .Include(p => p.Manager)
                 .Include(p => p.TeamMembers)
                 .Include(p => p.BugReports)
@@ -47,6 +49,7 @@ namespace BugTracker.Services
         public async Task<Project> GetProjectByIdAsync(int id)
         {
             return await _context.Projects
+                .AsNoTracking()
                 .Include(p => p.Manager)
                 .Include(p => p.TeamMembers)
                 .Include(p => p.BugReports)
@@ -112,6 +115,7 @@ namespace BugTracker.Services
         public async Task<Dictionary<Status, int>> GetProjectBugStatisticsAsync(int projectId)
         {
             var bugs = await _context.BugReports
+                .AsNoTracking()
                 .Where(b => b.ProjectId == projectId)
                 .ToListAsync();
 

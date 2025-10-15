@@ -148,7 +148,7 @@ public class FileService : IFileService
         var filePath = Path.Combine(_uploadsDirectory, safeFileName);
 
         // Validate final path is still within uploads directory
-        if (!Path.GetFullPath(filePath).StartsWith(_uploadsDirectory))
+        if (!IsPathWithinUploads(filePath))
             throw new SecurityException("Invalid file path");
 
         try
@@ -257,6 +257,19 @@ public class FileService : IFileService
         return content.Any(c => c == '\0' || (c < 32 && c != '\r' && c != '\n' && c != '\t'));
     }
 
+    private bool IsPathWithinUploads(string path)
+    {
+        var fullUploadsPath = Path.GetFullPath(_uploadsDirectory);
+        var targetFullPath = Path.GetFullPath(path);
+
+        if (OperatingSystem.IsWindows())
+        {
+            return targetFullPath.StartsWith(fullUploadsPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return targetFullPath.StartsWith(fullUploadsPath, StringComparison.Ordinal);
+    }
+
     public async Task<BugAttachment> GetAttachmentAsync(int attachmentId)
     {
         return await _context.BugAttachments.FindAsync(attachmentId);
@@ -272,7 +285,7 @@ public class FileService : IFileService
         var fullPath = Path.GetFullPath(Path.Combine(_uploadsDirectory, fileName));
 
         // Ensure the resolved path is still within uploads directory
-        if (!fullPath.StartsWith(_uploadsDirectory))
+        if (!IsPathWithinUploads(fullPath))
             throw new SecurityException("Invalid file path");
 
         if (!File.Exists(fullPath))
@@ -317,7 +330,7 @@ public class FileService : IFileService
         {
             // Verify the file path is within the uploads directory
             var fullPath = Path.GetFullPath(filePath);
-            if (!fullPath.StartsWith(_uploadsDirectory))
+            if (!IsPathWithinUploads(fullPath))
             {
                 _logger.LogError("Attempted to delete file outside uploads directory: {FilePath}", filePath);
                 throw new SecurityException("Invalid file path");
