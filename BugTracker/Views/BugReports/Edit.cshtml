@@ -5,7 +5,78 @@
     ViewData["Title"] = "Edit Bug Report";
 }
 
+@section Styles {
+    <style>
+        .breadcrumb-modern {
+            padding: .75rem 1.1rem;
+            background: var(--bs-body-bg);
+            border-radius: .9rem;
+            border: 1px solid var(--bs-border-color-translucent, rgba(15, 23, 42, 0.08));
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+
+        .breadcrumb-modern .breadcrumb-item+.breadcrumb-item::before {
+            color: var(--bs-secondary-color);
+            content: '>';
+            margin-right: .6rem;
+            margin-left: .4rem;
+        }
+
+        .breadcrumb-modern .breadcrumb-link {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            text-decoration: none;
+            color: inherit;
+            font-weight: 500;
+        }
+
+        .breadcrumb-modern .breadcrumb-link:hover,
+        .breadcrumb-modern .breadcrumb-link:focus {
+            color: var(--bs-primary);
+        }
+
+        .breadcrumb-modern .breadcrumb-item.active {
+            color: var(--bs-primary);
+            font-weight: 600;
+        }
+
+        .breadcrumb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .3rem .85rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.03);
+            border: 1px solid var(--bs-border-color-translucent, rgba(15, 23, 42, 0.08));
+            font-weight: 500;
+            color: var(--bs-secondary-color);
+        }
+
+        .breadcrumb-pill i {
+            color: var(--bs-primary);
+        }
+    </style>
+}
+
 <div class="container-fluid">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb breadcrumb-modern align-items-center mb-0">
+            <li class="breadcrumb-item">
+                <a asp-action="Index" class="breadcrumb-link">
+                    <i class="bi bi-collection"></i>
+                    <span>Bug Reports</span>
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <span class="breadcrumb-pill">
+                    <i class="bi bi-pencil-square"></i>
+                    Edit Bug #@Model.Id
+                </span>
+            </li>
+        </ol>
+    </nav>
+
     <h1 class="mb-4">Edit Bug Report #@Model.Id</h1>
 
     <form asp-action="Edit" method="post" enctype="multipart/form-data">
@@ -45,7 +116,7 @@
                 },
                 processResults: function (data) {
                     return {
-                        results: data.map(function(tag) {
+                        results: data.map(function (tag) {
                             return {
                                 id: tag.id,
                                 text: tag.text,
@@ -56,22 +127,22 @@
                 },
                 cache: true
             },
-            templateResult: function(tag) {
+            templateResult: function (tag) {
                 if (!tag.id) return tag.text;
-                
+
                 var $tag = $(
-                    '<span><span class="badge me-2" style="background-color: ' + tag.color + '; color: ' + 
-                    (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' + 
+                    '<span><span class="badge me-2" style="background-color: ' + tag.color + '; color: ' +
+                    (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' +
                     tag.text + '</span></span>'
                 );
                 return $tag;
             },
-            templateSelection: function(tag) {
+            templateSelection: function (tag) {
                 if (!tag.id) return tag.text;
-                
+
                 return $(
-                    '<span class="badge me-1" style="background-color: ' + tag.color + '; color: ' + 
-                    (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' + 
+                    '<span class="badge me-1" style="background-color: ' + tag.color + '; color: ' +
+                    (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' +
                     tag.text + '</span>'
                 );
             }

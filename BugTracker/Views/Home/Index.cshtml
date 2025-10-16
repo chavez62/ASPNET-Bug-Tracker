@@ -2,10 +2,59 @@
     ViewData["Title"] = "Dashboard";
 }
 
+@section Styles {
+    <style>
+        .hero-card {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.16), rgba(20, 184, 166, 0.04) 45%, rgba(20, 184, 166, 0.12));
+        }
+
+        .hero-card::before,
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(20, 184, 166, 0.35) 0%, rgba(20, 184, 166, 0) 65%);
+            pointer-events: none;
+        }
+
+        .hero-card::before {
+            top: -160px;
+            right: -120px;
+        }
+
+        .hero-card::after {
+            bottom: -180px;
+            left: -140px;
+        }
+
+        .hero-illustration {
+            background: rgba(20, 184, 166, 0.08);
+        }
+
+        @@media (min-width: 992px) {
+            .hero-illustration {
+                transform: translateY(10px);
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .hero-card::before,
+            .hero-card::after {
+                width: 260px;
+                height: 260px;
+            }
+        }
+    </style>
+}
+
 @if (User?.Identity?.IsAuthenticated == true)
 {
-    <div class="bg-primary bg-gradient text-white rounded-3 p-5 mb-4">
-        <div class="container-fluid py-3">
+    <div class="dashboard-hero rounded-3 p-5 mb-4">
+        <div class="container-fluid py-3 position-relative">
             <h1 class="display-5 fw-bold">Welcome Back, @ViewBag.UserDisplayName!</h1>
             <p class="col-md-8 fs-4">Here's your bug tracking overview</p>
             <div class="d-flex gap-2 mt-4">
@@ -147,19 +196,57 @@
 }
 else
 {
-    <div class="px-4 py-5 my-5 text-center">
-        <i class="bi bi-bug-fill display-1 text-primary mb-4"></i>
-        <h1 class="display-5 fw-bold">Welcome to Bug Tracker</h1>
-        <div class="col-lg-6 mx-auto">
-            <p class="lead mb-4">
-                Track, manage, and resolve software issues efficiently with our comprehensive bug tracking system.
-            </p>
-            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                <a asp-area="Identity" asp-page="/Account/Register"
-                   class="btn btn-primary btn-lg px-4 gap-3">Register</a>
-                <a asp-area="Identity" asp-page="/Account/Login"
-                   class="btn btn-outline-secondary btn-lg px-4">Login</a>
+    <section class="py-5">
+        <div class="container">
+            <div class="hero-card rounded-4 shadow-sm px-4 px-md-5 py-5 text-center text-lg-start">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-6">
+                        <div class="d-inline-flex align-items-center bg-white bg-opacity-75 text-dark fw-semibold rounded-pill px-3 py-1 mb-3">
+                            <i class="bi bi-lightning-charge-fill me-2" style="color:#0f766e;"></i>
+                            <span>Ship fixes faster</span>
+                        </div>
+                        <h1 class="display-5 fw-semibold text-dark mb-3">Welcome to Bug Tracker</h1>
+                        <p class="lead text-muted mb-4">Track, manage, and resolve software issues efficiently with our comprehensive bug tracking system.</p>
+                        <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center justify-content-sm-start justify-content-center">
+                            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-4 rounded-3 shadow-sm">Get Started</a>
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary btn-lg px-4 rounded-3">Sign In</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="hero-illustration rounded-4 p-4 p-md-5 h-100">
+                            <ul class="list-unstyled mb-0">
+                                <li class="d-flex align-items-start mb-4">
+                                    <div class="bg-white rounded-circle p-3 shadow-sm me-3">
+                                        <i class="bi bi-kanban fs-4" style="color:#0f766e;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Pipeline at a glance</h6>
+                                        <small class="text-muted">Monitor open, in-progress, and resolved work from a central view.</small>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-start mb-4">
+                                    <div class="bg-white rounded-circle p-3 shadow-sm me-3">
+                                        <i class="bi bi-graph-up fs-4" style="color:#0f766e;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Insights that matter</h6>
+                                        <small class="text-muted">Surface trends and severity spikes before they impact releases.</small>
+                                    </div>
+                                </li>
+                                <li class="d-flex align-items-start">
+                                    <div class="bg-white rounded-circle p-3 shadow-sm me-3">
+                                        <i class="bi bi-people fs-4" style="color:#0f766e;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Collaboration ready</h6>
+                                        <small class="text-muted">Give developers, QA, and stakeholders a shared workspace.</small>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 }
