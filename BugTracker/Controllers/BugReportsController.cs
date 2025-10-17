@@ -17,6 +17,7 @@ namespace BugTracker.Controllers
         private readonly IBugService _bugService;
         private readonly IBugValidationService _validationService;
         private readonly IActivityLogService _activityLogService;
+        private readonly IFileService _fileService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<BugReportsController> _logger;
         private readonly ApplicationDbContext _context;
@@ -25,6 +26,7 @@ namespace BugTracker.Controllers
             IBugService bugService,
             IBugValidationService validationService,
             IActivityLogService activityLogService,
+            IFileService fileService,
             UserManager<ApplicationUser> userManager,
             ILogger<BugReportsController> logger,
             ApplicationDbContext context)
@@ -32,6 +34,7 @@ namespace BugTracker.Controllers
             _bugService = bugService;
             _validationService = validationService;
             _activityLogService = activityLogService;
+            _fileService = fileService;
             _userManager = userManager;
             _logger = logger;
             _context = context;
@@ -140,6 +143,20 @@ namespace BugTracker.Controllers
                 // Create bug report
                 var createdBug = await _bugService.CreateBugReportAsync(bugReport);
 
+                if (files?.Any() == true)
+                {
+                    foreach (var file in files)
+                    {
+                        var attachment = await _fileService.SaveAttachmentAsync(file, createdBug.Id);
+                        await _activityLogService.LogActivityAsync(
+                            createdBug.Id,
+                            bugReport.CreatedById,
+                            "AddedAttachment",
+                            $"Uploaded attachment '{attachment.FileName}'"
+                        );
+                    }
+                }
+
                 // Log activity
                 await _activityLogService.LogActivityAsync(
                     createdBug.Id,
@@ -202,7 +219,7 @@ namespace BugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Severity,Status,AssignedToId,CreatedById,CreatedDate,ProjectId")] BugReport bugReport, List<int> SelectedTagIds)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Severity,Status,AssignedToId,CreatedById,CreatedDate,ProjectId")] BugReport bugReport, List<IFormFile> files, List<int> SelectedTagIds)
         {
             if (id != bugReport.Id)
                 return NotFound();
@@ -210,6 +227,21 @@ namespace BugTracker.Controllers
             try
             {
                 var validationResult = await _validationService.ValidateBugReportAsync(bugReport);
+                var filesValid = true;
+
+                if (files?.Any() == true)
+                {
+                    var fileValidation = await _validationService.ValidateFilesAsync(files);
+                    if (!fileValidation.IsValid)
+                    {
+                        filesValid = false;
+                        foreach (var error in fileValidation.Errors)
+                        {
+                            ModelState.AddModelError(error.Key, error.Value.First());
+                        }
+                    }
+                }
+
                 if (!validationResult.IsValid)
                 {
                     foreach (var error in validationResult.Errors)
@@ -217,6 +249,13 @@ namespace BugTracker.Controllers
                         ModelState.AddModelError(error.Key, error.Value.First());
                     }
 
+                    await PrepareViewBags();
+                    ViewBag.SelectedTagIds = SelectedTagIds ?? new List<int>();
+                    return View(bugReport);
+                }
+
+                if (!filesValid)
+                {
                     await PrepareViewBags();
                     ViewBag.SelectedTagIds = SelectedTagIds ?? new List<int>();
                     return View(bugReport);
@@ -254,6 +293,20 @@ namespace BugTracker.Controllers
                 }
 
                 await _bugService.UpdateBugReportAsync(bugReport, editorUserId);
+
+                if (files?.Any() == true)
+                {
+                    foreach (var file in files)
+                    {
+                        var attachment = await _fileService.SaveAttachmentAsync(file, bugReport.Id);
+                        await _activityLogService.LogActivityAsync(
+                            bugReport.Id,
+                            editorUserId,
+                            "AddedAttachment",
+                            $"Uploaded attachment '{attachment.FileName}'"
+                        );
+                    }
+                }
 
                 return RedirectToAction(nameof(Details), new { id = bugReport.Id });
             }

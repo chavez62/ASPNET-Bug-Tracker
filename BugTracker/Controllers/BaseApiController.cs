@@ -17,7 +17,7 @@ namespace BugTracker.Controllers
             return RedirectToAction("Index");
         }
 
-        protected IActionResult JsonSuccess(string message = null)
+        protected IActionResult JsonSuccess(string? message = null)
         {
             return Json(new { success = true, message });
         }

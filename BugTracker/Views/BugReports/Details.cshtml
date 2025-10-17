@@ -4,6 +4,7 @@
 @using System
 @using System.IO
 @using System.Linq
+@using System.Text.Json
 
 @{
     ViewData["Title"] = $"Bug #{Model.Id} Details";
@@ -244,6 +245,7 @@
             border-radius: 1rem;
             transition: transform .2s ease, box-shadow .2s ease;
             height: 100%;
+            min-height: 240px;
         }
 
         .attachments-grid .attachment-card:hover {
@@ -251,9 +253,50 @@
             box-shadow: 0 .75rem 2rem rgba(15, 23, 42, 0.08);
         }
 
+        .attachments-grid .attachment-card .attachment-footer {
+            display: flex;
+            flex-direction: column;
+            gap: .75rem;
+        }
+
+        .attachments-grid .attachment-card .attachment-footer small {
+            margin: 0;
+        }
+
+        .attachments-grid .attachment-card .attachment-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .attachments-grid .attachment-card .attachment-actions .btn {
+            flex: 1 1 140px;
+        }
+
+        @@media (min-width: 768px) {
+            .attachments-grid .attachment-card {
+                min-height: 260px;
+            }
+
+            .attachments-grid .attachment-card .attachment-footer {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .attachments-grid .attachment-card .attachment-actions {
+                justify-content: flex-end;
+            }
+
+            .attachments-grid .attachment-card .attachment-actions .btn {
+                flex: 0 0 auto;
+                min-width: 120px;
+            }
+        }
+
         .attachment-preview {
-            width: 64px;
-            height: 64px;
+            width: 110px;
+            height: 110px;
             border-radius: .85rem;
             background: var(--bs-gray-200);
             display: flex;
@@ -267,6 +310,50 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        #imagePreviewModal .modal-dialog {
+            max-width: min(95vw, 1100px);
+        }
+
+        #imagePreviewModal .modal-body {
+            max-height: calc(95vh - 4rem);
+            padding: 0;
+            background: #111;
+        }
+
+        #imagePreviewModal .preview-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            min-height: 60vh;
+            padding: 2rem;
+        }
+
+        #imagePreviewModal .preview-wrapper img,
+        #imagePreviewModal .preview-wrapper iframe,
+        #imagePreviewModal .preview-wrapper embed {
+            max-width: 100%;
+            max-height: calc(95vh - 8rem);
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 1rem;
+            background: #000;
+        }
+
+        #imagePreviewModal .preview-wrapper iframe,
+        #imagePreviewModal .preview-wrapper embed {
+            border: none;
+            background: #fff;
+        }
+
+        #imagePreviewModal .preview-meta {
+            padding: 1rem 1.5rem;
+            background: #fff;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .timeline-wrapper {
@@ -589,18 +676,22 @@
                                                 <small class="text-muted text-uppercase">@(string.IsNullOrEmpty(fileExtension) ? "UNKNOWN" : fileExtension) · @((attachment.FileSize / 1024.0).ToString("F1")) KB</small>
                                             </div>
                                         </div>
-                                        <div class="d-flex align-items-center justify-content-between mt-auto pt-2 border-top">
+                                        <div class="attachment-footer d-flex align-items-start justify-content-between mt-auto pt-2 border-top">
                                             <small class="text-muted">Uploaded @uploadedDate</small>
-                                            <div class="btn-group">
+                                            <div class="attachment-actions">
                                                 <a href="@Url.Action("GetFile", "SecureFile", new { attachmentId = attachment.Id })"
-                                                   class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" download>
+                                                   class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1" download>
                                                     <i class="bi bi-download"></i>
                                                     <span>Download</span>
                                                 </a>
                                                 @if (isImage)
                                                 {
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
-                                                            onclick="previewImage('@Url.Action("GetFile", "SecureFile", new { attachmentId = attachment.Id })')">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center gap-1"
+                                                            onclick='previewAttachment(@JsonSerializer.Serialize(new {
+                                                                url = Url.Action("GetFile", "SecureFile", new { attachmentId = attachment.Id }),
+                                                                fileName = attachment.FileName,
+                                                                isImage = isImage
+                                                            }))'>
                                                         <i class="bi bi-eye"></i>
                                                         <span>Preview</span>
                                                     </button>
@@ -781,9 +872,19 @@
                 <h5 class="modal-title">Image Preview</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center">
-                <img id="previewImage" src="" class="img-fluid" />
+        <div class="modal-body">
+            <div class="preview-wrapper">
+                <img id="previewImage" src="" alt="Attachment preview" class="d-none" />
+                <iframe id="previewFrame" class="d-none" title="Attachment preview"></iframe>
             </div>
+        </div>
+        <div class="preview-meta d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+            <div class="text-truncate"><strong id="previewFilename"></strong></div>
+            <a id="previewDownload" href="#" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" download>
+                <i class="bi bi-download"></i>
+                <span>Download</span>
+            </a>
+        </div>
         </div>
     </div>
 </div>
@@ -920,8 +1021,32 @@
             });
         });
 
-        function previewImage(path) {
-            document.getElementById('previewImage').src = path;
+        function previewAttachment(attachment) {
+            if (!attachment || !attachment.url) {
+                return;
+            }
+
+            const imageEl = document.getElementById('previewImage');
+            const frameEl = document.getElementById('previewFrame');
+            const fileNameEl = document.getElementById('previewFilename');
+            const downloadEl = document.getElementById('previewDownload');
+
+            imageEl.classList.add('d-none');
+            frameEl.classList.add('d-none');
+
+            fileNameEl.textContent = attachment.fileName || 'Attachment preview';
+            downloadEl.href = attachment.url;
+
+            if (attachment.isImage) {
+                imageEl.src = attachment.url;
+                imageEl.alt = attachment.fileName || 'Attachment image preview';
+                imageEl.classList.remove('d-none');
+            } else {
+                frameEl.src = attachment.url;
+                frameEl.title = attachment.fileName || 'Attachment preview';
+                frameEl.classList.remove('d-none');
+            }
+
             imagePreviewModal.show();
         }
 

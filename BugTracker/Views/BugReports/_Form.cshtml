@@ -1,5 +1,6 @@
 @model BugTracker.Models.BugReport
 @using BugTracker.Models.Enums
+@using System.IO
 
 <!-- Basic Information Card -->
 <div class="card shadow-sm mb-4">
@@ -19,7 +20,7 @@
         <div class="mb-4">
             <label asp-for="Description" class="form-label fw-semibold">Description</label>
             <textarea asp-for="Description" class="form-control" rows="6"
-                      placeholder="Provide detailed steps to reproduce the issue and expected behavior"></textarea>
+                placeholder="Provide detailed steps to reproduce the issue and expected behavior"></textarea>
             <span asp-validation-for="Description" class="text-danger"></span>
             <div class="form-text">Include any relevant context or background information</div>
         </div>
@@ -37,22 +38,20 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label asp-for="Severity" class="form-label fw-semibold">Severity</label>
-                <select asp-for="Severity" asp-items="Html.GetEnumSelectList<Severity>()"
-                        class="form-select">
+                <select asp-for="Severity" asp-items="Html.GetEnumSelectList<Severity>()" class="form-select">
                     <option value="">-- Select Severity --</option>
                 </select>
                 <span asp-validation-for="Severity" class="text-danger"></span>
             </div>
             <div class="col-md-6 mb-3">
                 <label asp-for="Status" class="form-label fw-semibold">Status</label>
-                <select asp-for="Status" asp-items="Html.GetEnumSelectList<Status>()"
-                        class="form-select">
+                <select asp-for="Status" asp-items="Html.GetEnumSelectList<Status>()" class="form-select">
                     <option value="">-- Select Status --</option>
                 </select>
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>
         </div>
-        
+
         <div class="mb-3">
             <label class="form-label fw-semibold">Tags</label>
             <select id="tagSelect" name="SelectedTagIds" multiple class="form-control">
@@ -79,8 +78,7 @@
     <div class="card-body">
         <div class="mb-3">
             <label asp-for="AssignedToId" class="form-label fw-semibold">Assign To</label>
-            <select asp-for="AssignedToId" asp-items="ViewBag.Users"
-                    class="form-select">
+            <select asp-for="AssignedToId" asp-items="ViewBag.Users" class="form-select">
                 <option value="">-- Select User --</option>
             </select>
             <span asp-validation-for="AssignedToId" class="text-danger"></span>
@@ -114,5 +112,84 @@
                 Max 5 files. Supported formats: .jpg, .jpeg, .png, .pdf, .txt, .log
             </div>
         </div>
+
+        @{
+            var attachments = Model?.Attachments?
+            .OrderByDescending(a => a.UploadDate)
+            .ToList();
+        }
+
+        @if (attachments?.Any() == true)
+        {
+            <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-semibold mb-0">Existing Attachments</h6>
+                    <small class="text-muted">@attachments.Count item@(attachments.Count == 1 ? string.Empty : "s")</small>
+                </div>
+                <div id="existingAttachments" class="list-group">
+                    @foreach (var attachment in attachments)
+                    {
+                        var isImage = attachment.ContentType?.StartsWith("image", StringComparison.OrdinalIgnoreCase) == true;
+                        var uploadedDate = attachment.UploadDate == default
+                        ? "Unknown"
+                        : attachment.UploadDate.ToLocalTime().ToString("MMM dd, yyyy");
+
+                        <div class="list-group-item attachment-item d-flex flex-column flex-md-row align-items-md-center gap-3">
+                            <div class="d-flex align-items-center gap-3 flex-grow-1">
+                                <div class="attachment-preview shadow-sm flex-shrink-0">
+                                    @if (isImage)
+                                    {
+                                        <img src="@Url.Action("GetFile", "SecureFile", new { attachmentId = attachment.Id })"
+                                            alt="Preview of @attachment.FileName" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-file-earmark-text fs-3 text-muted"></i>
+                                    }
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="fw-semibold text-truncate" title="@attachment.FileName">@attachment.FileName
+                                </div>
+                                <div class="small text-muted text-uppercase">
+                                    @{ var ext = System.IO.Path.GetExtension(attachment.FileName); }
+                                    @(string.IsNullOrWhiteSpace(ext)
+                                        ? "UNKNOWN"
+                                        : ext.Trim('.').ToUpperInvariant()) · @((attachment.FileSize / 1024.0).ToString("F1")) KB
+                                </div>
+                            <div class="small text-muted">Uploaded @uploadedDate</div>
+                        </div>
+                    </div>
+                    <div class="attachment-actions d-flex gap-2 ms-md-auto">
+                        <a href="@Url.Action("GetFile", "SecureFile", new { attachmentId = attachment.Id })"
+                            class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1" download>
+                            <i class="bi bi-download"></i>
+                            <span>Download</span>
+                        </a>
+                        @if (isImage)
+                                {
+                                    <a href="@Url.Action("GetFile", "SecureFile", new { attachmentId = attachment.Id })"
+                                        class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center gap-1"
+                                        target="_blank" rel="noopener noreferrer">
+                                        <i class="bi bi-eye"></i>
+                                        <span>Preview</span>
+                                    </a>
+                                }
+                                <form asp-controller="BugAttachments" asp-action="DeleteAttachment" method="post"
+                                    class="delete-attachment-form">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@attachment.Id" />
+                                    <input type="hidden" name="bugId" value="@Model.Id" />
+                                    <button type="submit"
+                                        class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center gap-1">
+                                        <i class="bi bi-trash"></i>
+                                        <span>Delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
     </div>
 </div>

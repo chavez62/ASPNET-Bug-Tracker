@@ -345,3 +345,47 @@ main {
     padding: 1rem;
   }
 }
+
+/* Attachments */
+.attachment-item {
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.attachment-item .attachment-preview {
+  width: 110px;
+  height: 110px;
+  border-radius: 0.75rem;
+  background-color: var(--bg-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.attachment-item .attachment-preview i {
+  font-size: 2.5rem;
+  color: var(--text-muted);
+}
+
+.attachment-item .attachment-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.attachment-item .attachment-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.attachment-item .attachment-actions .btn {
+  flex: 1 1 auto;
+  min-width: 130px;
+}
+
+@media (min-width: 768px) {
+  .attachment-item .attachment-actions {
+    align-items: center;
+  }
+}
