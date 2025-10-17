@@ -4,249 +4,942 @@
 
 @section Styles {
     <style>
-        .hero-card {
+        .landing-hero {
             position: relative;
+            border-radius: 32px;
+            padding: 4.5rem 0;
+            background: linear-gradient(135deg, #f0f9ff 0%, #ecfeff 45%, #dcfce7 100%);
+            box-shadow: 0 32px 80px -40px rgba(15, 118, 110, 0.35);
             overflow: hidden;
-            background: linear-gradient(135deg, rgba(20, 184, 166, 0.16), rgba(20, 184, 166, 0.04) 45%, rgba(20, 184, 166, 0.12));
         }
 
-        .hero-card::before,
-        .hero-card::after {
+        .landing-hero::before,
+        .landing-hero::after {
             content: "";
             position: absolute;
-            width: 320px;
-            height: 320px;
+            width: 440px;
+            height: 440px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(20, 184, 166, 0.35) 0%, rgba(20, 184, 166, 0) 65%);
+            background: radial-gradient(circle, rgba(15, 118, 110, 0.18) 0%, rgba(15, 118, 110, 0) 70%);
             pointer-events: none;
         }
 
-        .hero-card::before {
+        .landing-hero::before {
             top: -160px;
-            right: -120px;
+            left: -120px;
         }
 
-        .hero-card::after {
-            bottom: -180px;
-            left: -140px;
+        .landing-hero::after {
+            bottom: -200px;
+            right: -140px;
         }
 
-        .hero-illustration {
-            background: rgba(20, 184, 166, 0.08);
+        .landing-hero>.container {
+            position: relative;
+            z-index: 2;
         }
 
-        @@media (min-width: 992px) {
-            .hero-illustration {
-                transform: translateY(10px);
+        .hero-highlight {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.65rem 1.4rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #0f766e;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: 0 18px 35px -24px rgba(15, 118, 110, 0.55);
+        }
+
+        .hero-highlight i {
+            font-size: 1.1rem;
+        }
+
+        .landing-hero h1 {
+            color: #0f172a;
+        }
+
+        .landing-hero .lead {
+            color: #475569;
+        }
+
+        .landing-hero .btn-primary {
+            background: linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%);
+            border: none;
+        }
+
+        .landing-hero .btn-primary:hover {
+            background: linear-gradient(135deg, #0f766e 10%, #2563eb 100%);
+        }
+
+        .landing-hero .btn-outline-secondary {
+            border-width: 2px;
+            color: #0f172a;
+        }
+
+        .landing-visual {
+            position: relative;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 28px;
+            padding: 3rem 2.75rem;
+            box-shadow: 0 24px 70px -40px rgba(15, 23, 42, 0.55);
+            overflow: hidden;
+        }
+
+        .landing-visual::after {
+            content: "";
+            position: absolute;
+            inset: 18px;
+            border-radius: 22px;
+            border: 1px solid rgba(15, 118, 110, 0.12);
+            pointer-events: none;
+        }
+
+        .landing-visual ul {
+            margin: 0;
+        }
+
+        .landing-visual li {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            padding: 1.1rem 0;
+            border-bottom: 1px solid rgba(15, 118, 110, 0.1);
+        }
+
+        .landing-visual li:last-child {
+            border-bottom: none;
+        }
+
+        .icon-ring {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
+            background: rgba(15, 118, 110, 0.12);
+            color: #0f766e;
+            flex-shrink: 0;
+            font-size: 1.4rem;
+        }
+
+        .landing-visual h6 {
+            margin-bottom: 0.4rem;
+            color: #0f172a;
+        }
+
+        .landing-visual small {
+            color: #64748b;
+        }
+
+        .landing-metrics {
+            margin-top: 2.5rem;
+        }
+
+        .landing-metrics .metric-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 1.25rem 1.5rem;
+            border: 1px solid rgba(15, 118, 110, 0.08);
+            box-shadow: 0 22px 40px -32px rgba(15, 23, 42, 0.6);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .landing-metrics .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 50px -32px rgba(15, 23, 42, 0.5);
+        }
+
+        .landing-metrics small {
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+        }
+
+        .landing-metrics strong {
+            display: block;
+            margin-top: 0.45rem;
+            color: #0f172a;
+            font-size: 1.15rem;
+        }
+
+        .landing-trust {
+            margin-top: 2.5rem;
+        }
+
+        .landing-trust span {
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 700;
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+
+        .landing-trust .brand-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.4rem 1.2rem;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.12);
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .landing-features {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            padding: 4.5rem 0;
+        }
+
+        .landing-features .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.3rem;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.12);
+            color: #0f766e;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.82rem;
+        }
+
+        .feature-item {
+            background: #fff;
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 30px 70px -45px rgba(15, 23, 42, 0.38);
+            transition: transform 0.25s ease, border-color 0.25s ease;
+            height: 100%;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-6px);
+            border-color: rgba(15, 118, 110, 0.35);
+        }
+
+        .feature-item .icon-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            background: rgba(15, 118, 110, 0.12);
+            color: #0f766e;
+            font-size: 1.6rem;
+        }
+
+        .feature-item h5 {
+            margin-top: 1.4rem;
+            margin-bottom: 0.6rem;
+            color: #0f172a;
+        }
+
+        .feature-item p {
+            color: #475569;
+        }
+
+        .landing-workflow {
+            padding: 4.5rem 0;
+        }
+
+        .workflow-card {
+            position: relative;
+            border-radius: 28px;
+            padding: 3rem;
+            background: #0f172a;
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .workflow-card::after {
+            content: "";
+            position: absolute;
+            inset: -90px 35% -90px -90px;
+            background: radial-gradient(circle, rgba(14, 116, 144, 0.45) 0%, rgba(14, 116, 144, 0) 65%);
+            opacity: 0.8;
+        }
+
+        .workflow-card>* {
+            position: relative;
+            z-index: 2;
+        }
+
+        .workflow-step {
+            position: relative;
+            padding-left: 2.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .workflow-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .workflow-step::before {
+            content: "";
+            position: absolute;
+            left: 0.75rem;
+            top: 1.6rem;
+            bottom: -2rem;
+            width: 2px;
+            background: rgba(148, 163, 184, 0.35);
+        }
+
+        .workflow-step:last-child::before {
+            display: none;
+        }
+
+        .workflow-step .step-index {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1.8rem;
+            height: 1.8rem;
+            border-radius: 999px;
+            background: rgba(20, 184, 166, 0.2);
+            color: #5eead4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .workflow-step strong {
+            color: #f8fafc;
+            display: block;
+            margin-bottom: 0.35rem;
+        }
+
+        .workflow-step p {
+            margin: 0;
+            color: #94a3b8;
+        }
+
+        .landing-cta {
+            padding: 4.5rem 0 5.5rem;
+        }
+
+        .landing-cta-card {
+            position: relative;
+            border-radius: 28px;
+            padding: 3rem;
+            background: linear-gradient(125deg, #0f766e 0%, #0ea5e9 55%, #4338ca 115%);
+            color: #f8fafc;
+            overflow: hidden;
+            box-shadow: 0 38px 90px -45px rgba(59, 130, 246, 0.5);
+        }
+
+        .landing-cta-card::after {
+            content: "";
+            position: absolute;
+            inset: 24px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            opacity: 0.6;
+        }
+
+        .landing-cta-card h3 {
+            position: relative;
+            z-index: 2;
+            font-size: 2rem;
+        }
+
+        .landing-cta-card p {
+            position: relative;
+            z-index: 2;
+            color: rgba(226, 232, 240, 0.92);
+            max-width: 480px;
+            margin-bottom: 1.5rem;
+        }
+
+        .landing-cta-card .btn-white {
+            position: relative;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.85rem 2.3rem;
+            border-radius: 999px;
+            background: #fff;
+            color: #0f172a;
+            font-weight: 600;
+            border: none;
+            box-shadow: 0 22px 55px -32px rgba(15, 23, 42, 0.65);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .landing-cta-card .btn-white:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 28px 60px -32px rgba(15, 23, 42, 0.6);
+            color: #0f766e;
+        }
+
+        .dashboard-hero {
+            background: linear-gradient(125deg, #0f172a 0%, #0f766e 70%, #38bdf8 140%);
+            color: #f8fafc;
+            overflow: hidden;
+            box-shadow: 0 28px 60px -36px rgba(15, 23, 42, 0.65);
+            border: none;
+        }
+
+        .dashboard-hero::after {
+            content: "";
+            position: absolute;
+            inset: -140px -60px -140px auto;
+            width: 320px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0) 65%);
+            opacity: 0.6;
+        }
+
+        .dashboard-hero h1 {
+            color: #f8fafc;
+        }
+
+        .dashboard-hero .btn-outline-light {
+            border-width: 2px;
+        }
+
+        .dashboard-metrics .metric-panel {
+            display: flex;
+            gap: 1.1rem;
+            padding: 1.6rem 1.5rem;
+            border-radius: 24px;
+            background: #fff;
+            border: 1px solid rgba(15, 118, 110, 0.08);
+            box-shadow: 0 26px 60px -42px rgba(15, 23, 42, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .dashboard-metrics .metric-panel:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 34px 70px -40px rgba(15, 23, 42, 0.45);
+        }
+
+        .metric-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            font-size: 1.5rem;
+        }
+
+        .bg-primary-soft {
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .bg-warning-soft {
+            background: rgba(251, 191, 36, 0.15);
+        }
+
+        .bg-info-soft {
+            background: rgba(14, 165, 233, 0.16);
+        }
+
+        .bg-success-soft {
+            background: rgba(34, 197, 94, 0.16);
+        }
+
+        .metric-label {
+            display: block;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.35rem;
+        }
+
+        .metric-sub {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .shadow-soft {
+            box-shadow: 0 26px 60px -46px rgba(15, 23, 42, 0.4) !important;
+        }
+
+        .recent-activity .card-subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .recent-activity .table {
+            --bs-table-hover-bg: rgba(15, 118, 110, 0.05);
+        }
+
+        .recent-activity thead {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+        .recent-activity thead th {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            color: #0f172a;
+            font-size: 0.83rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .status-pill.bg-warning {
+            color: #78350f;
+        }
+
+        .status-pill.bg-info {
+            color: #0c4a6e;
+        }
+
+        .status-pill.bg-success {
+            color: #00ad7f;
+        }
+
+        .status-pill.bg-danger {
+            color: #861616;
+        }
+
+        .recent-activity .btn-outline-primary {
+            border-width: 1.5px;
+        }
+
+        .recent-activity .btn-outline-primary:hover {
+            background: #0f766e;
+            color: #fff;
+        }
+
+        .text-cyan-100 {
+            color: #cffafe;
+        }
+
+        @@media(min - width: 992px) {
+                .landing-visual {
+                    transform: translateY(10px);
+                }
             }
-        }
 
-        @@media (max-width: 767.98px) {
-            .hero-card::before,
-            .hero-card::after {
-                width: 260px;
-                height: 260px;
+            @@media(max - width: 991.98px) {
+                    .landing-hero {
+                        border-radius: 22px;
+                        padding: 3.8rem 0;
+                    }
+
+                    .landing-visual {
+                        padding: 2.5rem 2rem;
+                        margin-top: 1rem;
+                    }
+
+                    .landing-features,
+                    .landing-workflow,
+                    .landing-cta {
+                        padding: 3.5rem 0;
+                    }
+
+                    .landing-cta-card {
+                        padding: 2.5rem 2rem;
+                    }
+                }
+
+                @@media(max - width: 575.98px) {
+                        .landing-hero {
+                            padding: 3.2rem 0;
+                        }
+
+                        .landing-visual {
+                            padding: 2.2rem 1.7rem;
+                        }
+
+                        .landing-metrics .metric-card {
+                            padding: 1.05rem 1.25rem;
+                        }
+
+                        .feature-item {
+                            padding: 1.8rem;
+                        }
+
+                        .landing-cta-card {
+                            padding: 2.3rem 1.65rem;
+                        }
+                    }
+                </style>
             }
-        }
-    </style>
-}
 
-@if (User?.Identity?.IsAuthenticated == true)
-{
-    <div class="dashboard-hero rounded-3 p-5 mb-4">
-        <div class="container-fluid py-3 position-relative">
-            <h1 class="display-5 fw-bold">Welcome Back, @ViewBag.UserDisplayName!</h1>
-            <p class="col-md-8 fs-4">Here's your bug tracking overview</p>
-            <div class="d-flex gap-2 mt-4">
-                <a asp-controller="BugReports" asp-action="Create" class="btn btn-light btn-lg px-4">
-                    <i class="bi bi-plus-circle me-2"></i>Report Bug
-                </a>
-                <a asp-controller="BugReports" asp-action="Index" class="btn btn-outline-light btn-lg px-4">
-                    <i class="bi bi-list me-2"></i>View All
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-5">
-        <!-- Total Bugs Card -->
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-dark bg-opacity-10 p-3 rounded-3 me-3">
-                            <i class="bi bi-lightning-charge-fill text-primary fs-4"></i>
+            @if (User?.Identity?.IsAuthenticated == true)
+            {
+                <div class="dashboard-hero rounded-3 p-5 mb-4">
+                    <div class="container-fluid py-3 position-relative">
+                        <h1 class="display-5 fw-bold">Welcome Back, @ViewBag.UserDisplayName!</h1>
+                        <p class="col-md-8 fs-4">Here's your bug tracking overview</p>
+                        <div class="d-flex gap-2 mt-4">
+                            <a asp-controller="BugReports" asp-action="Create" class="btn btn-light btn-lg px-4">
+                                <i class="bi bi-plus-circle me-2"></i>Report Bug
+                            </a>
+                            <a asp-controller="BugReports" asp-action="Index" class="btn btn-outline-light btn-lg px-4">
+                                <i class="bi bi-list me-2"></i>View All
+                            </a>
                         </div>
-                        <h5 class="card-title mb-0">Total Bugs</h5>
                     </div>
-                    <h2 class="display-6 fw-bold text-primary mb-0">@ViewBag.TotalBugs</h2>
-                    <p class="text-muted small mb-0">All reported issues</p>
                 </div>
-            </div>
-        </div>
 
-        <!-- Open Bugs Card -->
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
-                            <i class="bi bi-exclamation-circle-fill text-warning fs-4"></i>
+                <div class="dashboard-metrics row g-4 mb-5">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="metric-panel h-100">
+                            <div class="metric-icon bg-primary-soft text-primary">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                            </div>
+                            <div>
+                                <span class="metric-label">Total Bugs</span>
+                                <h3 class="metric-value">@ViewBag.TotalBugs</h3>
+                                <p class="metric-sub">All reported issues</p>
+                            </div>
                         </div>
-                        <h5 class="card-title mb-0">Open</h5>
                     </div>
-                    <h2 class="display-6 fw-bold text-warning mb-0">@ViewBag.OpenBugs</h2>
-                    <p class="text-muted small mb-0">Awaiting action</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- In Progress Card -->
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-info bg-opacity-10 p-3 rounded-3 me-3">
-                            <i class="bi bi-gear-fill text-info fs-4"></i>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="metric-panel h-100">
+                            <div class="metric-icon bg-warning-soft text-warning">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                            </div>
+                            <div>
+                                <span class="metric-label">Open</span>
+                                <h3 class="metric-value">@ViewBag.OpenBugs</h3>
+                                <p class="metric-sub">Awaiting action</p>
+                            </div>
                         </div>
-                        <h5 class="card-title mb-0">In Progress</h5>
                     </div>
-                    <h2 class="display-6 fw-bold text-info mb-0">@ViewBag.InProgressBugs</h2>
-                    <p class="text-muted small mb-0">Currently working</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Resolved Card -->
-        <div class="col-md-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-success bg-opacity-10 p-3 rounded-3 me-3">
-                            <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="metric-panel h-100">
+                            <div class="metric-icon bg-info-soft text-info">
+                                <i class="bi bi-gear-fill"></i>
+                            </div>
+                            <div>
+                                <span class="metric-label">In Progress</span>
+                                <h3 class="metric-value">@ViewBag.InProgressBugs</h3>
+                                <p class="metric-sub">Currently working</p>
+                            </div>
                         </div>
-                        <h5 class="card-title mb-0">Resolved</h5>
                     </div>
-                    <h2 class="display-6 fw-bold text-success mb-0">@ViewBag.ResolvedBugs</h2>
-                    <p class="text-muted small mb-0">Successfully fixed</p>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="metric-panel h-100">
+                            <div class="metric-icon bg-success-soft text-success">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div>
+                                <span class="metric-label">Resolved</span>
+                                <h3 class="metric-value">@ViewBag.ResolvedBugs</h3>
+                                <p class="metric-sub">Successfully fixed</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Recent Activity Section -->
-    <div class="card row mb-4">
-        <div class="col-12">
-            <div class="border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0 py-3">
-                    <h5 class="mb-0">Recent Activity</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Title</th>
-                                    <th>Status</th>
-                                    <th>Severity</th>
-                                    <th>Updated</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var bug in ViewBag.RecentBugs ?? Enumerable.Empty<BugReport>())
-                                {
+                <div class="recent-activity card border-0 shadow-soft mb-4">
+                    <div class="card-header bg-white border-0 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <h5 class="mb-1">Recent Activity</h5>
+                            <p class="card-subtitle mb-0">Latest updates from your teams</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 text-muted small">
+                            <i class="bi bi-arrow-repeat"></i>
+                            <span>Updated daily</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <td>#@bug.Id</td>
-                                        <td>@bug.Title</td>
-                                        <td>
-                                            <span class="badge bg-@(bug.Status switch {
-                    Status.Open => "warning",
-                    Status.InProgress => "info",
-                    Status.Resolved => "success",
-                    _ => "secondary"
-                })">@bug.Status</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-@(bug.Severity switch { 
-                    Severity.Critical => "danger",
-                    Severity.High => "warning",
-                    Severity.Medium => "info",
-                    Severity.Low => "secondary",
-                    _ => "secondary"
-                })">@bug.Severity</span>
-                                        </td>
-                                        <td>@bug.CreatedDate.ToString("MMM dd, yyyy")</td>  <!-- Changed UpdatedAt to CreatedDate  -->
-                                        <td>
-                                            <a asp-controller="BugReports" asp-action="Details" asp-route-id="@bug.Id"
-                                               class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                        </td>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Severity</th>
+                                        <th scope="col">Updated</th>
+                                        <th scope="col" class="text-end">Actions</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    @foreach (var bug in ViewBag.RecentBugs ?? Enumerable.Empty<BugReport>())
+                                    {
+                                        <tr>
+                                            <td class="fw-semibold text-nowrap">#@bug.Id</td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 260px;" title="@bug.Title">@bug.Title</div>
+                                                <div class="small text-muted">@bug.Project?.Name</div>
+                                            </td>
+                                            <td>
+                                                <span class="status-pill bg-@(bug.Status switch {
+                                                            Status.Open => "warning",
+                                                                                Status.InProgress => "info",
+                                                                                Status.Resolved => "success",
+                                                                                _ => "secondary"
+                                                                                                                })">@bug.Status</span>
+                                    </td>
+                                    <td>
+                                        <span class="status-pill bg-@(bug.Severity switch {
+                                                                                Severity.Critical => "danger",
+                                                                                Severity.High => "warning",
+                                                                                Severity.Medium => "info",
+                                                                                Severity.Low => "secondary",
+                                                                                _ => "secondary"
+                                                                                                    })">@bug.Severity</span>
+                            </td>
+                            <td class="text-nowrap">@bug.CreatedDate.ToString("MMM dd, yyyy")</td>
+                            <td class="text-end">
+                                <a asp-controller="BugReports" asp-action="Details" asp-route-id="@bug.Id"
+                                    class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="bi bi-eye"></i>
+                                    <span class="ms-2 d-none d-md-inline">View</span>
+                                </a>
+                            </td>
+                        </tr>
+                                        }
+                            @if ((ViewBag.RecentBugs as IEnumerable<BugReport>)?.Any() != true)
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-3 mb-3 d-block"></i>
+                                        No activity yet. Create a bug report to get started.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-    </div>
-}
+    }
 else
-{
-    <section class="py-5">
-        <div class="container">
-            <div class="hero-card rounded-4 shadow-sm px-4 px-md-5 py-5 text-center text-lg-start">
-                <div class="row g-4 align-items-center">
-                    <div class="col-lg-6">
-                        <div class="d-inline-flex align-items-center bg-white bg-opacity-75 text-dark fw-semibold rounded-pill px-3 py-1 mb-3">
-                            <i class="bi bi-lightning-charge-fill me-2" style="color:#0f766e;"></i>
-                            <span>Ship fixes faster</span>
+    {
+        <section class="landing-hero">
+            <div class="container">
+                <div class="row align-items-center g-5">
+                    <div class="col-xl-6">
+                        <div class="hero-highlight mb-4">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                            <span>Ship fixes with clarity and speed</span>
                         </div>
-                        <h1 class="display-5 fw-semibold text-dark mb-3">Welcome to Bug Tracker</h1>
-                        <p class="lead text-muted mb-4">Track, manage, and resolve software issues efficiently with our comprehensive bug tracking system.</p>
-                        <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center justify-content-sm-start justify-content-center">
-                            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-4 rounded-3 shadow-sm">Get Started</a>
-                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary btn-lg px-4 rounded-3">Sign In</a>
+                        <h1 class="display-4 fw-bold mb-3">Keep every bug visible, prioritized, and moving forward.</h1>
+                        <p class="lead mb-4">Bug Tracker brings teams together with a crystal-clear workflow, rich analytics,
+                            and automations that keep defects from slipping through the cracks.</p>
+                        <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-center">
+                            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-4">Start for
+                                free</a>
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary btn-lg px-4">Sign
+                                in</a>
+                        </div>
+                        <div class="landing-trust d-flex flex-column flex-md-row align-items-md-center gap-3 mt-5">
+                            <span>Trusted by teams shipping weekly</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="brand-chip">DevOps</span>
+                                <span class="brand-chip">QA Labs</span>
+                                <span class="brand-chip">Product Squads</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-lg-6">
-                        <div class="hero-illustration rounded-4 p-4 p-md-5 h-100">
+                    <div class="col-xl-6">
+                        <div class="landing-visual">
                             <ul class="list-unstyled mb-0">
-                                <li class="d-flex align-items-start mb-4">
-                                    <div class="bg-white rounded-circle p-3 shadow-sm me-3">
-                                        <i class="bi bi-kanban fs-4" style="color:#0f766e;"></i>
-                                    </div>
+                                <li>
+                                    <span class="icon-ring"><i class="bi bi-kanban-fill"></i></span>
                                     <div>
-                                        <h6 class="fw-semibold mb-1">Pipeline at a glance</h6>
-                                        <small class="text-muted">Monitor open, in-progress, and resolved work from a central view.</small>
+                                        <h6 class="fw-semibold">Configurable work queues</h6>
+                                        <small>Pipeline swimlanes, triage filters, and smart assignments keep the work
+                                            balanced.</small>
                                     </div>
                                 </li>
-                                <li class="d-flex align-items-start mb-4">
-                                    <div class="bg-white rounded-circle p-3 shadow-sm me-3">
-                                        <i class="bi bi-graph-up fs-4" style="color:#0f766e;"></i>
-                                    </div>
+                                <li>
+                                    <span class="icon-ring"><i class="bi bi-bar-chart-fill"></i></span>
                                     <div>
-                                        <h6 class="fw-semibold mb-1">Insights that matter</h6>
-                                        <small class="text-muted">Surface trends and severity spikes before they impact releases.</small>
+                                        <h6 class="fw-semibold">Release-ready insights</h6>
+                                        <small>Spot regressions and severity spikes before they derail your next
+                                            deployment.</small>
                                     </div>
                                 </li>
-                                <li class="d-flex align-items-start">
-                                    <div class="bg-white rounded-circle p-3 shadow-sm me-3">
-                                        <i class="bi bi-people fs-4" style="color:#0f766e;"></i>
-                                    </div>
+                                <li>
+                                    <span class="icon-ring"><i class="bi bi-people-fill"></i></span>
                                     <div>
-                                        <h6 class="fw-semibold mb-1">Collaboration ready</h6>
-                                        <small class="text-muted">Give developers, QA, and stakeholders a shared workspace.</small>
+                                        <h6 class="fw-semibold">More collaboration, less chaos</h6>
+                                        <small>Stakeholders get role-aware views, mentions, and history so nothing is
+                                            missed.</small>
                                     </div>
                                 </li>
                             </ul>
+                            <div class="landing-metrics row row-cols-1 row-cols-sm-3 g-3">
+                                <div class="col">
+                                    <div class="metric-card text-center">
+                                        <small>Setup time</small>
+                                        <strong><span class="fs-2">10</span> minutes</strong>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="metric-card text-center">
+                                        <small>Teams onboard</small>
+                                        <strong><span class="fs-2">250+</span></strong>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="metric-card text-center">
+                                        <small>Response lift</small>
+                                        <strong><span class="fs-2">35%</span> faster</strong>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-}
+        </section>
+
+        <section class="landing-features">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <span class="section-label"><i class="bi bi-grid-3x3-gap"></i> Platform pillars</span>
+                    <h2 class="fw-bold mt-3 mb-3">Everything you need to guide bugs from report to resolution</h2>
+                    <p class="text-muted mb-0">Bug Tracker combines triage, progress tracking, and delivery insights so your
+                        team stays focused and aligned.</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-item h-100">
+                            <div class="icon-badge">
+                                <i class="bi bi-inboxes-fill"></i>
+                            </div>
+                            <h5>Smart intake &amp; automation</h5>
+                            <p>Route defects automatically based on component, severity, or SLA, and keep the right people in
+                                the loop with notifications that matter.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-item h-100">
+                            <div class="icon-badge">
+                                <i class="bi bi-speedometer2"></i>
+                            </div>
+                            <h5>Live health dashboards</h5>
+                            <p>Track cycle time, response time, and reopen rates so you can coach teams and celebrate wins with
+                                real numbers.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-item h-100">
+                            <div class="icon-badge">
+                                <i class="bi bi-shield-lock-fill"></i>
+                            </div>
+                            <h5>Enterprise confidence</h5>
+                            <p>Role-based access, audit trails, and integrations with your existing tools keep compliance teams
+                                happy without slowing everyone else down.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-workflow">
+            <div class="container">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-6">
+                        <h2 class="fw-bold mb-3">Designed for the way modern product teams work</h2>
+                        <p class="text-muted mb-4">From the first triage to final resolution, Bug Tracker keeps momentum while
+                            giving everyone the visibility they need.</p>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-3 d-flex gap-3">
+                                <span class="badge bg-success bg-opacity-25 text-success rounded-pill align-self-start mt-1"><i
+                                        class="bi bi-puzzle"></i></span>
+                                <div>
+                                    <strong>Seamless integrations</strong>
+                                    <p class="mb-0 text-muted">Connect Git, CI/CD, and messaging tools so updates flow where
+                                        your team already works.</p>
+                                </div>
+                            </li>
+                            <li class="mb-3 d-flex gap-3">
+                                <span class="badge bg-primary bg-opacity-25 text-primary rounded-pill align-self-start mt-1"><i
+                                        class="bi bi-magic"></i></span>
+                                <div>
+                                    <strong>Automated follow-ups</strong>
+                                    <p class="mb-0 text-muted">Escalate automatically when SLAs are threatened and keep
+                                        watchlists notified without manual effort.</p>
+                                </div>
+                            </li>
+                            <li class="d-flex gap-3">
+                                <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill align-self-start mt-1"><i
+                                        class="bi bi-diagram-3"></i></span>
+                                <div>
+                                    <strong>Shared context</strong>
+                                    <p class="mb-0 text-muted">Threaded updates, attachments, and activity history provide a
+                                        single source of truth for every defect.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="workflow-card">
+                            <h5 class="text-uppercase text-cyan-100 mb-4">Workflow snapshot</h5>
+                            <div class="workflow-step">
+                                <span class="step-index">1</span>
+                                <strong>Capture</strong>
+                                <p>Collect bugs from forms, email, or integrations with auto-tagging and duplicate detection.
+                                </p>
+                            </div>
+                            <div class="workflow-step">
+                                <span class="step-index">2</span>
+                                <strong>Prioritize</strong>
+                                <p>Assess severity and impact with customizable scoring and routing rules tailored to your
+                                    release cadence.</p>
+                            </div>
+                            <div class="workflow-step mb-0">
+                                <span class="step-index">3</span>
+                                <strong>Resolve</strong>
+                                <p>Track ownership to completion with linked commits, QA sign-off, and automated release notes.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-cta">
+            <div class="container">
+                <div class="landing-cta-card text-center text-lg-start">
+                    <div class="row align-items-center g-4">
+                        <div class="col-lg-8">
+                            <h3 class="fw-bold">Ready to replace spreadsheets and stale bug queues?</h3>
+                            <p>Launch a workspace in minutes, invite your teammates, and reclaim hours every sprint with
+                                automation that keeps your backlog in check.</p>
+                        </div>
+                        <div class="col-lg-4 text-lg-end">
+                            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-white">
+                                <i class="bi bi-rocket"></i>
+                                Create your workspace
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
