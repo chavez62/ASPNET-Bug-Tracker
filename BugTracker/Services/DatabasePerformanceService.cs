@@ -58,11 +58,11 @@ namespace BugTracker.Services
         {
             // In a production environment, this would query the database's query log
             // For SQLite, we'll return a placeholder list
-            return new List<string>
+            return await Task.FromResult(new List<string>
             {
                 "SELECT * FROM BugReports WHERE Status = @status AND CreatedDate >= @date",
                 "SELECT COUNT(*) FROM BugReports WHERE AssignedToId = @userId"
-            };
+            });
         }
 
         public async Task<bool> OptimizeDatabaseAsync()
@@ -100,10 +100,11 @@ namespace BugTracker.Services
 
                 // Extract the database file path from connection string
                 var filePath = dbPath.Replace("Data Source=", "").Split(';')[0];
-                
+
                 if (File.Exists(filePath))
                 {
-                    var fileInfo = new FileInfo(filePath);
+                    // Use Task.Run to avoid CS1998 and run file IO on a background thread
+                    var fileInfo = await Task.Run(() => new FileInfo(filePath));
                     return fileInfo.Length;
                 }
 

@@ -116,12 +116,12 @@
                 toastEl.setAttribute('aria-atomic', 'true');
 
                 toastEl.innerHTML = `
-                            <div class="d-flex">
-                                <div class="toast-body">
-                                    ${message}
-                                </div>
-                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>`;
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        ${message}
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>`;
 
                 toastContainer.appendChild(toastEl);
                 const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
@@ -191,26 +191,48 @@
                     return;
                 }
 
-                attachmentContainer.addEventListener('submit', async (event) => {
-                    const form = event.target.closest('.delete-attachment-form');
-                    if (!form) {
+                const antiForgeryInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (!antiForgeryInput) {
+                    console.warn('Anti-forgery token not found; attachment deletion disabled.');
+                    return;
+                }
+
+                attachmentContainer.addEventListener('click', async (event) => {
+                    const deleteButton = event.target.closest('.delete-attachment-button');
+                    if (!deleteButton || !attachmentContainer.contains(deleteButton)) {
                         return;
                     }
 
                     event.preventDefault();
 
-                    const submitButton = form.querySelector('button[type="submit"]');
-                    const originalButtonText = submitButton.innerHTML;
-                    submitButton.disabled = true;
-                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Removing';
+                    const deleteUrl = deleteButton.dataset.deleteUrl;
+                    const attachmentId = deleteButton.dataset.attachmentId;
+                    const bugId = deleteButton.dataset.bugId;
+                    const token = antiForgeryInput.value;
+
+                    if (!deleteUrl || !attachmentId || !bugId || !token) {
+                        console.error('Missing data required for attachment deletion.');
+                        createToast('Unable to delete attachment. Please refresh and try again.', 'danger');
+                        return;
+                    }
+
+                    const originalButtonContent = deleteButton.innerHTML;
+                    deleteButton.disabled = true;
+                    deleteButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Removing';
 
                     try {
-                        const formData = new FormData(form);
-                        const response = await fetch(form.action, {
+                        const body = new URLSearchParams({
+                            '__RequestVerificationToken': token,
+                            id: attachmentId,
+                            bugId: bugId
+                        });
+
+                        const response = await fetch(deleteUrl, {
                             method: 'POST',
-                            body: formData,
+                            body,
                             headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
                             }
                         });
 
@@ -221,13 +243,16 @@
                         const result = await response.json();
 
                         if (result.success) {
-                            const attachmentItem = form.closest('.attachment-item');
+                            const attachmentItem = deleteButton.closest('.attachment-item');
                             if (attachmentItem) {
                                 attachmentItem.remove();
                             }
 
                             if (!attachmentContainer.querySelector('.attachment-item')) {
-                                attachmentContainer.parentElement.remove();
+                                const attachmentSection = attachmentContainer.parentElement;
+                                if (attachmentSection) {
+                                    attachmentSection.remove();
+                                }
                             }
 
                             createToast('Attachment deleted successfully.', 'success');
@@ -238,8 +263,8 @@
                         console.error('Attachment deletion failed:', error);
                         createToast('Failed to delete attachment. Please try again.', 'danger');
                     } finally {
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = originalButtonText;
+                        deleteButton.disabled = false;
+                        deleteButton.innerHTML = originalButtonContent;
                     }
                 });
             };

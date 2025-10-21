@@ -86,6 +86,8 @@ namespace BugTracker.Controllers
 
                 // Initialize empty selected tags for new bug
                 ViewBag.SelectedTagIds = new List<int>();
+                ViewBag.SelectedTags = new List<Tag>();
+                ViewBag.ExistingAttachments = new List<BugAttachment>();
 
                 return View(newBug);
             }
@@ -123,7 +125,7 @@ namespace BugTracker.Controllers
                     }
 
                     await PrepareViewBags();
-                    ViewBag.SelectedTagIds = SelectedTagIds ?? new List<int>();
+                    await PopulateSelectedTagsAsync(SelectedTagIds);
                     return View(bugReport);
                 }
 
@@ -132,13 +134,7 @@ namespace BugTracker.Controllers
                 bugReport.CreatedDate = DateTime.UtcNow;
 
                 // Handle tag associations
-                if (SelectedTagIds != null && SelectedTagIds.Any())
-                {
-                    var tags = await _context.Tags
-                        .Where(t => SelectedTagIds.Contains(t.Id))
-                        .ToListAsync();
-                    bugReport.Tags = tags;
-                }
+                await AttachTagsAsync(bugReport, SelectedTagIds);
 
                 // Create bug report
                 var createdBug = await _bugService.CreateBugReportAsync(bugReport);
@@ -206,8 +202,8 @@ namespace BugTracker.Controllers
                 await PrepareViewBags();
                 ViewBag.ValidationRules = _validationService.GetClientValidationRules();
 
-                // Set selected tags for the dropdown
-                ViewBag.SelectedTagIds = bugReport.Tags.Select(t => t.Id).ToList();
+                await PopulateSelectedTagsAsync(bugReport.Tags.Select(t => t.Id));
+                await PopulateAttachmentsAsync(bugReport);
 
                 return View(bugReport);
             }
@@ -250,14 +246,16 @@ namespace BugTracker.Controllers
                     }
 
                     await PrepareViewBags();
-                    ViewBag.SelectedTagIds = SelectedTagIds ?? new List<int>();
+                    await PopulateSelectedTagsAsync(SelectedTagIds);
+                    await PopulateAttachmentsAsync(bugReport);
                     return View(bugReport);
                 }
 
                 if (!filesValid)
                 {
                     await PrepareViewBags();
-                    ViewBag.SelectedTagIds = SelectedTagIds ?? new List<int>();
+                    await PopulateSelectedTagsAsync(SelectedTagIds);
+                    await PopulateAttachmentsAsync(bugReport);
                     return View(bugReport);
                 }
 
@@ -266,25 +264,7 @@ namespace BugTracker.Controllers
                     .Include(b => b.Tags)
                     .FirstOrDefaultAsync(b => b.Id == id);
 
-                if (existingBug != null)
-                {
-                    // Clear existing tags
-                    existingBug.Tags.Clear();
-
-                    // Add selected tags
-                    if (SelectedTagIds != null && SelectedTagIds.Any())
-                    {
-                        var tags = await _context.Tags
-                            .Where(t => SelectedTagIds.Contains(t.Id))
-                            .ToListAsync();
-                        foreach (var tag in tags)
-                        {
-                            existingBug.Tags.Add(tag);
-                        }
-                    }
-
-                    await _context.SaveChangesAsync();
-                }
+                await UpdateExistingBugTagsAsync(existingBug, SelectedTagIds);
 
                 var editorUserId = _userManager.GetUserId(User);
                 if (string.IsNullOrEmpty(editorUserId))
@@ -314,6 +294,73 @@ namespace BugTracker.Controllers
             {
                 return HandleError(ex);
             }
+        }
+
+        private async Task<List<Tag>> GetTagsByIdsAsync(IEnumerable<int> tagIds)
+        {
+            if (tagIds == null)
+            {
+                return new List<Tag>();
+            }
+
+            var ids = tagIds.Distinct().ToList();
+            if (!ids.Any())
+            {
+                return new List<Tag>();
+            }
+
+            return await _context.Tags
+                .Where(t => ids.Contains(t.Id))
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+        }
+
+        private async Task PopulateSelectedTagsAsync(IEnumerable<int> tagIds)
+        {
+            var tags = await GetTagsByIdsAsync(tagIds ?? Array.Empty<int>());
+            ViewBag.SelectedTagIds = tags.Select(t => t.Id).ToList();
+            ViewBag.SelectedTags = tags;
+        }
+
+        private async Task AttachTagsAsync(BugReport bugReport, IEnumerable<int> tagIds)
+        {
+            var tags = await GetTagsByIdsAsync(tagIds ?? Array.Empty<int>());
+            bugReport.Tags = tags;
+        }
+
+        private async Task UpdateExistingBugTagsAsync(BugReport existingBug, IEnumerable<int> tagIds)
+        {
+            if (existingBug == null)
+            {
+                return;
+            }
+
+            var tags = await GetTagsByIdsAsync(tagIds ?? Array.Empty<int>());
+
+            existingBug.Tags.Clear();
+
+            foreach (var tag in tags)
+            {
+                existingBug.Tags.Add(tag);
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task PopulateAttachmentsAsync(BugReport bugReport)
+        {
+            if (bugReport == null || bugReport.Id == 0)
+            {
+                return;
+            }
+
+            var attachments = await _context.BugAttachments
+                .Where(a => a.BugReportId == bugReport.Id)
+                .OrderByDescending(a => a.UploadDate)
+                .ToListAsync();
+
+            bugReport.Attachments = attachments;
+            ViewBag.ExistingAttachments = attachments;
         }
 
         [HttpPost]

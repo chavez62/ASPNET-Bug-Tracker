@@ -32,9 +32,14 @@ namespace BugTracker.Controllers
                     var currentUser = await _userManager.GetUserAsync(User);
 
                     // Set user's display name
-                    ViewBag.UserDisplayName = !string.IsNullOrEmpty(currentUser.FirstName)
-                        ? $"{currentUser.FirstName} {currentUser.LastName}"
-                        : User.Identity.Name;
+                    if (currentUser != null && !string.IsNullOrEmpty(currentUser.FirstName))
+                    {
+                        ViewBag.UserDisplayName = $"{currentUser.FirstName} {currentUser.LastName}";
+                    }
+                    else
+                    {
+                        ViewBag.UserDisplayName = User.Identity.Name;
+                    }
 
                     // Get summary statistics for the dashboard
                     var statusStats = await _bugService.GetBugStatusStatisticsAsync();

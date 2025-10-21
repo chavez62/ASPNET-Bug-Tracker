@@ -1,6 +1,8 @@
 @model BugTracker.Models.BugReport
+@using BugTracker.Models
 @using BugTracker.Models.Enums
 @using System.IO
+@using System.Linq
 
 <!-- Basic Information Card -->
 <div class="card shadow-sm mb-4">
@@ -54,13 +56,17 @@
 
         <div class="mb-3">
             <label class="form-label fw-semibold">Tags</label>
+            @{
+                var tagSource = ViewBag.SelectedTags as IEnumerable<Tag>;
+                tagSource ??= Model?.Tags;
+                var selectedTags = tagSource?.ToList() ?? new List<Tag>();
+            }
             <select id="tagSelect" name="SelectedTagIds" multiple class="form-control">
-                @if (Model?.Tags != null)
+                @foreach (var tag in selectedTags)
                 {
-                    @foreach (var tag in Model.Tags)
-                    {
-                        <option value="@tag.Id" selected data-color="@tag.Color">@tag.Name</option>
-                    }
+                    var backgroundColor = string.IsNullOrWhiteSpace(tag.Color) ? "#6c757d" : tag.Color;
+                    var tagName = string.IsNullOrWhiteSpace(tag.Name) ? $"Tag #{tag.Id}" : tag.Name;
+                    <option value="@tag.Id" selected data-color="@backgroundColor">@tagName</option>
                 }
             </select>
             <div class="form-text">Select or create tags to categorize this bug report</div>
@@ -114,20 +120,23 @@
         </div>
 
         @{
-            var attachments = Model?.Attachments?
-            .OrderByDescending(a => a.UploadDate)
-            .ToList();
+            var attachmentsSource = ViewBag.ExistingAttachments as IEnumerable<BugAttachment>;
+            attachmentsSource ??= Model?.Attachments;
+            var orderedAttachments = attachmentsSource?
+                .OrderByDescending(a => a.UploadDate)
+                .ToList() ?? new List<BugAttachment>();
+            var attachmentCount = orderedAttachments.Count;
         }
 
-        @if (attachments?.Any() == true)
+        @if (attachmentCount > 0)
         {
             <div class="mt-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="fw-semibold mb-0">Existing Attachments</h6>
-                    <small class="text-muted">@attachments.Count item@(attachments.Count == 1 ? string.Empty : "s")</small>
+                    <small class="text-muted">@attachmentCount item@(attachmentCount == 1 ? string.Empty : "s")</small>
                 </div>
                 <div id="existingAttachments" class="list-group">
-                    @foreach (var attachment in attachments)
+                    @foreach (var attachment in orderedAttachments)
                     {
                         var isImage = attachment.ContentType?.StartsWith("image", StringComparison.OrdinalIgnoreCase) == true;
                         var uploadedDate = attachment.UploadDate == default
@@ -174,17 +183,14 @@
                                         <span>Preview</span>
                                     </a>
                                 }
-                                <form asp-controller="BugAttachments" asp-action="DeleteAttachment" method="post"
-                                    class="delete-attachment-form">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@attachment.Id" />
-                                    <input type="hidden" name="bugId" value="@Model.Id" />
-                                    <button type="submit"
-                                        class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center gap-1">
-                                        <i class="bi bi-trash"></i>
-                                        <span>Delete</span>
-                                    </button>
-                                </form>
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center gap-1 delete-attachment-button"
+                                    data-delete-url="@Url.Action("DeleteAttachment", "BugAttachments")"
+                                    data-attachment-id="@attachment.Id"
+                                    data-bug-id="@Model.Id">
+                                    <i class="bi bi-trash"></i>
+                                    <span>Delete</span>
+                                </button>
                             </div>
                         </div>
                     }
