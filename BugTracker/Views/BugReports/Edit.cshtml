@@ -80,8 +80,9 @@
 
     <h1 class="mb-4">Edit Bug Report #@Model.Id</h1>
 
-    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" id="editBugForm">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <div id="fileValidationErrors" class="alert alert-danger d-none" role="alert"></div>
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="CreatedById" />
         <input type="hidden" asp-for="CreatedDate" />
@@ -116,12 +117,12 @@
                 toastEl.setAttribute('aria-atomic', 'true');
 
                 toastEl.innerHTML = `
-                                <div class="d-flex">
-                                    <div class="toast-body">
-                                        ${message}
-                                    </div>
-                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                                </div>`;
+                                                                <div class="d-flex">
+                                                                    <div class="toast-body">
+                                                                        ${message}
+                                                                    </div>
+                                                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                                </div>`;
 
                 toastContainer.appendChild(toastEl);
                 const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
@@ -129,6 +130,29 @@
                 toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
 
                 return toast;
+            };
+
+            const resolveTagColor = (tag) => {
+                if (tag && typeof tag.color === 'string' && tag.color.trim().length) {
+                    return tag.color;
+                }
+
+                if (tag && tag.element) {
+                    const elementColor = tag.element.getAttribute('data-color');
+                    if (elementColor && elementColor.trim().length) {
+                        return elementColor.trim();
+                    }
+                }
+
+                return '#6c757d';
+            };
+
+            const createTagBadge = (tag) => {
+                const color = resolveTagColor(tag);
+                const text = tag && tag.text ? tag.text : '';
+                const contrastingColor = (color === '#FFFFFF' || color === '#ffffff') ? '#000000' : '#FFFFFF';
+
+                return $(`<span class="badge me-1" style="background-color: ${color}; color: ${contrastingColor};">${text}</span>`);
             };
 
             const initSelect2 = () => {
@@ -164,34 +188,40 @@
                         cache: true
                     },
                     templateResult: function (tag) {
-                        if (!tag.id) return tag.text;
+                        if (!tag.id) {
+                            return tag.text;
+                        }
 
-                        var $tag = $(
-                            '<span><span class="badge me-2" style="background-color: ' + tag.color + '; color: ' +
-                            (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' +
-                            tag.text + '</span></span>'
-                        );
-                        return $tag;
+                        const badge = createTagBadge(tag);
+                        return $('<span></span>').append(badge.addClass('me-1'));
                     },
                     templateSelection: function (tag) {
-                        if (!tag.id) return tag.text;
+                        if (!tag.id) {
+                            return tag.text;
+                        }
 
-                        return $(
-                            '<span class="badge me-1" style="background-color: ' + tag.color + '; color: ' +
-                            (tag.color === '#FFFFFF' || tag.color === '#ffffff' ? '#000000' : '#FFFFFF') + ';">' +
-                            tag.text + '</span>'
-                        );
+                        return createTagBadge(tag);
+                    }
+                });
+
+                tagSelect.find('option[selected]').each(function () {
+                    const option = $(this);
+                    if (!option.attr('data-color')) {
+                        option.attr('data-color', resolveTagColor({ text: option.text(), color: option.data('color') }));
                     }
                 });
             };
 
             const bindAttachmentDeletion = () => {
                 const attachmentContainer = document.getElementById('existingAttachments');
-                if (!attachmentContainer) {
+                const editForm = document.getElementById('editBugForm');
+                const validationAlert = document.getElementById('fileValidationErrors');
+
+                if (!attachmentContainer || !editForm) {
                     return;
                 }
 
-                const antiForgeryInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const antiForgeryInput = editForm.querySelector('input[name="__RequestVerificationToken"]');
                 if (!antiForgeryInput) {
                     console.warn('Anti-forgery token not found; attachment deletion disabled.');
                     return;
@@ -241,8 +271,11 @@
                         }
 
                         const result = await response.json();
-
                         if (result.success) {
+                            if (validationAlert) {
+                                validationAlert.classList.add('d-none');
+                                validationAlert.textContent = '';
+                            }
                             const attachmentItem = deleteButton.closest('.attachment-item');
                             if (attachmentItem) {
                                 attachmentItem.remove();
@@ -256,12 +289,23 @@
                             }
 
                             createToast('Attachment deleted successfully.', 'success');
-                        } else {
-                            throw new Error(result.message || 'Failed to delete attachment.');
+                            return;
                         }
+
+                        const failureMessage = result.message || 'Failed to delete attachment.';
+                        if (validationAlert) {
+                            validationAlert.classList.remove('d-none');
+                            validationAlert.textContent = failureMessage;
+                        }
+                        createToast(failureMessage, 'danger');
+                        return;
                     } catch (error) {
                         console.error('Attachment deletion failed:', error);
-                        createToast('Failed to delete attachment. Please try again.', 'danger');
+                        if (validationAlert) {
+                            validationAlert.classList.remove('d-none');
+                            validationAlert.textContent = error.message || 'Failed to delete attachment. Please try again.';
+                        }
+                        createToast(error.message || 'Failed to delete attachment. Please try again.', 'danger');
                     } finally {
                         deleteButton.disabled = false;
                         deleteButton.innerHTML = originalButtonContent;
