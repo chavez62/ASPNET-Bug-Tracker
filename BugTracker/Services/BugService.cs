@@ -281,8 +281,14 @@ public class BugService : IBugService
                 .AsNoTracking() // Performance optimization for read-only queries
                 .Include(b => b.AssignedTo)
                 .Include(b => b.CreatedBy)
-                .Include(b => b.Tags)
                 .AsQueryable();
+
+            var includesTags = RequiresTagData(searchModel);
+
+            if (includesTags)
+            {
+                query = query.Include(b => b.Tags);
+            }
 
             // Apply search filters
             query = ApplySearchFilters(query, searchModel);
@@ -299,6 +305,12 @@ public class BugService : IBugService
                 .Take(pageSize)
                 .ToListAsync();
 
+
+            if (!includesTags)
+            {
+                await PopulateTagsForListAsync(bugs);
+            }
+
             return (bugs, totalCount);
         }
         catch (Exception ex)
@@ -306,6 +318,76 @@ public class BugService : IBugService
             _logger.LogError(ex, "Error searching bug reports with criteria: {@SearchModel}", searchModel);
             throw new ApplicationException("Error retrieving bug reports", ex);
         }
+    }
+
+    private async Task PopulateTagsForListAsync(IList<BugReport> bugs)
+    {
+        if (bugs == null || bugs.Count == 0)
+        {
+            return;
+        }
+
+        var bugIds = bugs
+            .Where(b => b != null)
+            .Select(b => b.Id)
+            .ToList();
+
+        if (bugIds.Count == 0)
+        {
+            return;
+        }
+
+        var tagLookup = await _context.BugReports
+            .Where(b => bugIds.Contains(b.Id))
+            .Select(b => new
+            {
+                BugId = b.Id,
+                Tags = b.Tags.Select(t => new
+                {
+                    t.Id,
+                    t.Name,
+                    t.Color
+                }).ToList()
+            })
+            .AsNoTracking()
+            .ToListAsync();
+
+        var groupedTags = tagLookup
+            .ToDictionary(
+                item => item.BugId,
+                item => item.Tags.Select(t => new Tag
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    Color = t.Color
+                }).ToList());
+
+        foreach (var bug in bugs)
+        {
+            if (bug == null)
+            {
+                continue;
+            }
+
+            if (groupedTags.TryGetValue(bug.Id, out var tagList))
+            {
+                bug.Tags = tagList;
+            }
+            else
+            {
+                bug.Tags = new List<Tag>();
+            }
+        }
+    }
+
+    private static bool RequiresTagData(BugSearchModel searchModel)
+    {
+        if (searchModel == null)
+        {
+            return false;
+        }
+
+        return searchModel.SelectedTags != null && searchModel.SelectedTags.Any();
     }
 
     private IQueryable<BugReport> ApplySearchFilters(IQueryable<BugReport> query, BugSearchModel searchModel)
