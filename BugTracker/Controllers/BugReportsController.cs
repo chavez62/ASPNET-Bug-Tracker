@@ -46,8 +46,19 @@ namespace BugTracker.Controllers
             {
                 searchModel ??= new BugSearchModel();
                 var pageSize = searchModel.PageSize;
-                var result = await _bugService.SearchBugReportsAsync(searchModel, page, pageSize);
-                await PrepareViewBags();
+				var result = await _bugService.SearchBugReportsAsync(searchModel, page, pageSize);
+				await PrepareViewBags();
+
+				// Populate selected search tags for preselection in the filter (ID -> name/color)
+				if (searchModel.SelectedTags != null && searchModel.SelectedTags.Any())
+				{
+					var selectedIds = searchModel.SelectedTags.Distinct().ToList();
+					var selectedTags = await _context.Tags
+						.Where(t => selectedIds.Contains(t.Id))
+						.Select(t => new { t.Id, t.Name, t.Color })
+						.ToListAsync();
+					ViewBag.SelectedSearchTags = selectedTags;
+				}
 
                 return View(new BugListViewModel
                 {

@@ -474,7 +474,8 @@ public partial class BugService
 
         if (searchModel.SelectedTags != null && searchModel.SelectedTags.Any())
         {
-            query = query.Where(b => b.Tags.Any(t => searchModel.SelectedTags.Contains(t.Name)));
+            var selectedTagIds = searchModel.SelectedTags;
+            query = query.Where(b => b.Tags.Any(t => selectedTagIds.Contains(t.Id)));
         }
 
         return query;

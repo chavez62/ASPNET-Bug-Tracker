@@ -330,26 +330,26 @@ public class FileService : IFileService
         {
             // Verify the file path is within the uploads directory
             var fullPath = Path.GetFullPath(filePath);
-            if (!IsPathWithinUploads(fullPath))
+			if (!IsPathWithinUploads(fullPath))
             {
-                _logger.LogError("Attempted to delete file outside uploads directory: {FilePath}", filePath);
+				_logger.LogError("Attempted to delete file outside uploads directory: {FilePath}", fullPath);
                 throw new SecurityException("Invalid file path");
             }
 
-            if (File.Exists(filePath))
+			if (File.Exists(fullPath))
             {
                 // Remove read-only attribute if present
-                File.SetAttributes(filePath, File.GetAttributes(filePath) & ~FileAttributes.ReadOnly);
+				File.SetAttributes(fullPath, File.GetAttributes(fullPath) & ~FileAttributes.ReadOnly);
 
                 // Securely delete file contents before removing
-                await SecureDeleteAsync(filePath);
+				await SecureDeleteAsync(fullPath);
 
-                _logger.LogInformation("Successfully deleted file: {FilePath}", filePath);
+				_logger.LogInformation("Successfully deleted file: {FilePath}", fullPath);
             }
         }
         catch (Exception ex) when (ex is not SecurityException)
         {
-            _logger.LogError(ex, "Failed to delete file: {FilePath}", filePath);
+			_logger.LogError(ex, "Failed to delete file: {FilePath}", filePath);
             throw new IOException($"Failed to delete file: {ex.Message}", ex);
         }
     }

@@ -23,7 +23,7 @@ namespace BugTracker.Models
             public string? AssignedToId { get; set; }
             public DateTime? DateFrom { get; set; }
             public DateTime? DateTo { get; set; }
-            public List<string>? SelectedTags { get; set; }
+			public List<int>? SelectedTags { get; set; }
             public string? SortBy { get; set; }
             public bool SortDescending { get; set; }
             public int PageSize { get; set; } = 10;
