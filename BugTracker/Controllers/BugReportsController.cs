@@ -259,20 +259,13 @@ namespace BugTracker.Controllers
                     return View(bugReport);
                 }
 
-                // Handle tag associations
-                var existingBug = await _context.BugReports
-                    .Include(b => b.Tags)
-                    .FirstOrDefaultAsync(b => b.Id == id);
-
-                await UpdateExistingBugTagsAsync(existingBug, SelectedTagIds);
-
                 var editorUserId = _userManager.GetUserId(User);
                 if (string.IsNullOrEmpty(editorUserId))
                 {
                     return Challenge();
                 }
 
-                await _bugService.UpdateBugReportAsync(bugReport, editorUserId);
+                await _bugService.UpdateBugReportAsync(bugReport, editorUserId, SelectedTagIds);
 
                 if (files?.Any() == true)
                 {
@@ -326,25 +319,6 @@ namespace BugTracker.Controllers
         {
             var tags = await GetTagsByIdsAsync(tagIds ?? Array.Empty<int>());
             bugReport.Tags = tags;
-        }
-
-        private async Task UpdateExistingBugTagsAsync(BugReport existingBug, IEnumerable<int> tagIds)
-        {
-            if (existingBug == null)
-            {
-                return;
-            }
-
-            var tags = await GetTagsByIdsAsync(tagIds ?? Array.Empty<int>());
-
-            existingBug.Tags.Clear();
-
-            foreach (var tag in tags)
-            {
-                existingBug.Tags.Add(tag);
-            }
-
-            await _context.SaveChangesAsync();
         }
 
         private async Task PopulateAttachmentsAsync(BugReport bugReport)

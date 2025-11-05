@@ -19,7 +19,11 @@ namespace BugTracker.Services
         Task<IEnumerable<BugReport>> GetAllBugReportsAsync();
         Task<BugReport> GetBugReportAsync(int id);
         Task<BugReport> CreateBugReportAsync(BugReport bugReport);
-        Task UpdateBugReportAsync(BugReport bugReport, string editorUserId);
+        Task UpdateBugReportAsync(
+            BugReport bugReport,
+            string editorUserId,
+            IEnumerable<int>? tagIds = null,
+            IEnumerable<int>? attachmentsToRemove = null);
         Task DeleteBugReportAsync(int id);
         Task<bool> CanAccessBugReport(ClaimsPrincipal user, BugReport bugReport);
         Task<IEnumerable<BugReport>> GetBugReportsByUserAsync(string userId);
