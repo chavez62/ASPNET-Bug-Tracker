@@ -36,6 +36,8 @@ namespace BugTracker.Services
         public async Task<IEnumerable<ActivityLog>> GetActivityLogsForBugAsync(int bugReportId)
         {
             return await _context.ActivityLogs
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Where(log => log.BugReportId == bugReportId)
                 .Include(log => log.User)
                 .OrderByDescending(log => log.Timestamp)

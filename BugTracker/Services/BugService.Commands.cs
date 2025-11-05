@@ -60,6 +60,7 @@ public partial class BugService
 
             var createdBug = await _context.BugReports
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(b => b.Project)
                 .Include(b => b.AssignedTo)
                 .Include(b => b.CreatedBy)

@@ -21,6 +21,8 @@ namespace BugTracker.Controllers
         public async Task<IActionResult> Index()
         {
             var tags = await _context.Tags
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(t => t.BugReports)
                 .OrderBy(t => t.Name)
                 .ToListAsync();
@@ -36,6 +38,8 @@ namespace BugTracker.Controllers
             }
 
             var tag = await _context.Tags
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(t => t.BugReports)
                 .ThenInclude(b => b.AssignedTo)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -144,6 +148,8 @@ namespace BugTracker.Controllers
             }
 
             var tag = await _context.Tags
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(t => t.BugReports)
                 .FirstOrDefaultAsync(m => m.Id == id);
 

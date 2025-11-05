@@ -27,6 +27,7 @@ namespace BugTracker.Services
         {
             return await _context.Projects
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(p => p.Manager)
                 .Include(p => p.TeamMembers)
                 .Include(p => p.BugReports)
@@ -38,6 +39,7 @@ namespace BugTracker.Services
         {
             return await _context.Projects
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(p => p.Manager)
                 .Include(p => p.TeamMembers)
                 .Include(p => p.BugReports)
@@ -50,6 +52,7 @@ namespace BugTracker.Services
         {
             return await _context.Projects
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(p => p.Manager)
                 .Include(p => p.TeamMembers)
                 .Include(p => p.BugReports)

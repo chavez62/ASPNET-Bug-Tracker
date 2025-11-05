@@ -18,6 +18,7 @@ public partial class BugService
         {
             return await _context.BugReports
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(b => b.AssignedTo)
                 .Include(b => b.CreatedBy)
                 .Include(b => b.Tags)
@@ -37,6 +38,7 @@ public partial class BugService
         {
             return await _context.BugReports
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(b => b.AssignedTo)
                 .Include(b => b.CreatedBy)
                 .Include(b => b.Tags)
@@ -153,6 +155,7 @@ public partial class BugService
         {
             return await _context.BugReports
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(b => b.AssignedTo)
                 .Include(b => b.CreatedBy)
                 .Include(b => b.Tags)
@@ -268,6 +271,8 @@ public partial class BugService
         try
         {
             var bugReport = await _context.BugReports
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(b => b.AssignedTo)
                 .Include(b => b.CreatedBy)
                 .Include(b => b.Attachments)
@@ -340,6 +345,8 @@ public partial class BugService
         {
             query = query.AsNoTracking();
         }
+
+        query = query.AsSplitQuery();
 
         query = query
             .Include(b => b.AssignedTo)
