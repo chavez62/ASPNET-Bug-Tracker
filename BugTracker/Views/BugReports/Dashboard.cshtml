@@ -3,343 +3,132 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<h1 class="mb-4">Dashboard</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h1 class="mb-0">Dashboard</h1>
+    <div class="d-flex gap-2">
+        <a asp-controller="BugReports" asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Report Bug
+        </a>
+        <a asp-controller="BugReports" asp-action="Index" class="btn btn-outline-secondary">View All</a>
+        <button id="refreshBtn" type="button" class="btn btn-light" title="Refresh">
+            <i class="bi bi-arrow-repeat"></i>
+        </button>
+    </div>
+</div>
 
-<div class="row">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Total Bugs</h5>
-                <h2>@(ViewBag.TotalBugs ?? 0)</h2>
+<div id="metrics" class="row g-3 mb-4" aria-live="polite">
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-tile h-100">
+            <span class="metric-label">Total Bugs</span>
+            <div class="d-flex align-items-end justify-content-between mt-1">
+                <span id="totalBugs" class="metric-value">@(ViewBag.TotalBugs ?? 0)</span>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-white mb-4">
-            
-            @{
-                ViewData["Title"] = "Dashboard";
-            }
-
-            <h1 class="mb-4">Dashboard</h1>
-
-            <div class="row">
-                <div class="col-md-3 col-sm-6">
-                    <div class="card bg-primary text-white mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Bugs</h5>
-                            <h2 id="totalBugs">@(ViewBag.TotalBugs ?? 0)</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card bg-warning text-white mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Open Bugs</h5>
-                            <h2 id="openBugs">@(ViewBag.OpenBugs ?? 0)</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card bg-info text-white mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">In Progress</h5>
-                            <h2 id="inProgressBugs">@(ViewBag.InProgressBugs ?? 0)</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card bg-success text-white mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Resolved</h5>
-                            <h2 id="resolvedBugs">@(ViewBag.ResolvedBugs ?? 0)</h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            Bugs by Status
-                        </div>
-                        <div class="card-body">
-                            <canvas id="statusChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            Bugs by Severity
-                        </div>
-                        <div class="card-body">
-                            <canvas id="severityChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="loading" class="text-center" style="display: none;">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-            </div>
-
-            @section Scripts {
-                <script>
-                    function fetchData() {
-                        document.getElementById('loading').style.display = 'block';
-                        document.getElementById('dashboard-content').style.display = 'none';
-
-                        fetch('/api/dashboard-data')
-                            .then(response => response.json())
-                            .then(data => {
-                                updateDashboard(data);
-                                document.getElementById('loading').style.display = 'none';
-                                document.getElementById('dashboard-content').style.display = 'block';
-                            })
-                            .catch(error => {
-                                console.error('Error fetching data:', error);
-                                document.getElementById('loading').style.display = 'none';
-                                document.getElementById('dashboard-content').style.display = 'block';
-                            });
-                    }
-
-                    function updateDashboard(data) {
-                        document.getElementById('totalBugs').innerText = data.totalBugs;
-                        document.getElementById('openBugs').innerText = data.openBugs;
-                        document.getElementById('inProgressBugs').innerText = data.inProgressBugs;
-                        document.getElementById('resolvedBugs').innerText = data.resolvedBugs;
-
-                        statusChart.data.labels = data.statusLabels;
-                        statusChart.data.datasets[0].data = data.statusData;
-                        statusChart.update();
-
-                        severityChart.data.labels = data.severityLabels;
-                        severityChart.data.datasets[0].data = data.severityData;
-                        severityChart.update();
-                    }
-
-                    fetchData();
-                    setInterval(fetchData, 60000);
-                </script>
-                <script>
-                    var statusCtx = document.getElementById('statusChart').getContext('2d');
-                    var statusLabels = @Html.Raw(Json.Serialize(ViewBag.StatusLabels ?? new List<string>()));
-                    var statusData = @Html.Raw(Json.Serialize(ViewBag.StatusData ?? new List<int>()));
-
-                    var statusChart = new Chart(statusCtx, {
-                        type: 'pie',
-                        data: {
-                            labels: statusLabels,
-                            datasets: [{
-                                data: statusData,
-                                backgroundColor: [
-                                    '#dc3545', // Open - danger
-                                    '#ffc107', // In Progress - warning
-                                    '#0dcaf0', // Under Review - info
-                                    '#198754', // Resolved - success
-                                    '#6c757d'  // Closed - secondary
-                                ]
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom'
-                                }
-                            }
-                        }
-                    });
-
-                    var severityCtx = document.getElementById('severityChart').getContext('2d');
-                    var severityLabels = @Html.Raw(Json.Serialize(ViewBag.SeverityLabels ?? new List<string>()));
-                    var severityData = @Html.Raw(Json.Serialize(ViewBag.SeverityData ?? new List<int>()));
-
-                    var severityChart = new Chart(severityCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: severityLabels,
-                            datasets: [{
-                                label: 'Bugs by Severity',
-                                data: severityData,
-                                backgroundColor: [
-                                    '#6c757d', // Low - secondary
-                                    '#0dcaf0', // Medium - info
-                                    '#ffc107', // High - warning
-                                    '#dc3545'  // Critical - danger
-                                ]
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        stepSize: 1
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
-                            }
-                        }
-                    });
-                </script>
-            }
-            <h1 class="mb-4">Dashboard</h1>
-
-            <div class="row">
-                <div class="col-md-3 col-sm-6">
-                    <div class="card bg-primary text-white mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Bugs</h5>
-                            <h2 id="totalBugs">@(ViewBag.TotalBugs ?? 0)</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card bg-warning text-white mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Open Bugs</h5>
-                            <h2 id="openBugs">@(ViewBag.OpenBugs ?? 0)</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card bg-info text-white mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">In Progress</h5>
-                            <h2 id="inProgressBugs">@(ViewBag.InProgressBugs ?? 0)</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card bg-success text-white mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">Resolved</h5>
-                            <h2 id="resolvedBugs">@(ViewBag.ResolvedBugs ?? 0)</h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="loading" style="display: none;">Loading...</div>
-            <div id="dashboard-content" style="display: none;">
-                <!-- Existing dashboard content here -->
-            </div>
-
-            @section Scripts {
-                <script>
-                    function fetchData() {
-                        document.getElementById('loading').style.display = 'block';
-                        document.getElementById('dashboard-content').style.display = 'none';
-
-                        fetch('/api/dashboard-data')
-                            .then(response => response.json())
-                            .then(data => {
-                                // Update ViewBag data with fetched data
-                                updateDashboard(data);
-                                document.getElementById('loading').style.display = 'none';
-                                document.getElementById('dashboard-content').style.display = 'block';
-                            })
-                            .catch(error => {
-                                console.error('Error fetching data:', error);
-                                document.getElementById('loading').style.display = 'none';
-                                document.getElementById('dashboard-content').style.display = 'block';
-                            });
-                    }
-
-                    function updateDashboard(data) {
-                        // Update the dashboard with new data
-                        document.getElementById('totalBugs').innerText = data.totalBugs;
-                        document.getElementById('openBugs').innerText = data.openBugs;
-                        document.getElementById('inProgressBugs').innerText = data.inProgressBugs;
-                        document.getElementById('resolvedBugs').innerText = data.resolvedBugs;
-
-                        // Update charts
-                        statusChart.data.labels = data.statusLabels;
-                        statusChart.data.datasets[0].data = data.statusData;
-                        statusChart.update();
-
-                        severityChart.data.labels = data.severityLabels;
-                        severityChart.data.datasets[0].data = data.severityData;
-                        severityChart.update();
-                    }
-
-                    // Fetch data initially and set interval for periodic refresh
-                    fetchData();
-                    setInterval(fetchData, 60000); // Refresh every 60 seconds
-                </script>
-            }
-            <div class="card-body">
-                <h5 class="card-title">Open Bugs</h5>
-                <h2>@(ViewBag.OpenBugs ?? 0)</h2>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-tile h-100">
+            <span class="metric-label">Open</span>
+            <div class="d-flex align-items-end justify-content-between mt-1">
+                <span id="openBugs" class="metric-value">@(ViewBag.OpenBugs ?? 0)</span>
+                <span class="badge bg-warning">Open</span>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white mb-4">
-            <div class="card-body">
-                <h5 class="card-title">In Progress</h5>
-                <h2>@(ViewBag.InProgressBugs ?? 0)</h2>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-tile h-100">
+            <span class="metric-label">In Progress</span>
+            <div class="d-flex align-items-end justify-content-between mt-1">
+                <span id="inProgressBugs" class="metric-value">@(ViewBag.InProgressBugs ?? 0)</span>
+                <span class="badge bg-info">In Progress</span>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Resolved</h5>
-                <h2>@(ViewBag.ResolvedBugs ?? 0)</h2>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-tile h-100">
+            <span class="metric-label">Resolved</span>
+            <div class="d-flex align-items-end justify-content-between mt-1">
+                <span id="resolvedBugs" class="metric-value">@(ViewBag.ResolvedBugs ?? 0)</span>
+                <span class="badge bg-success">Resolved</span>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                Bugs by Status
-            </div>
-            <div class="card-body">
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Bugs by Status</div>
+            <div class="card-body chart-card">
                 <canvas id="statusChart"></canvas>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                Bugs by Severity
-            </div>
-            <div class="card-body">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Bugs by Severity</div>
+            <div class="card-body chart-card">
                 <canvas id="severityChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
+<div id="dashboardLoading" class="my-4" style="display:none;">
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-3">
+            <div class="skeleton-box" style="height:72px;"></div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="skeleton-box" style="height:72px;"></div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="skeleton-box" style="height:72px;"></div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="skeleton-box" style="height:72px;"></div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        // Status Chart
-        var statusCtx = document.getElementById('statusChart').getContext('2d');
-        var statusLabels = @Html.Raw(Json.Serialize(ViewBag.StatusLabels ?? new List<string>()));
-        var statusData = @Html.Raw(Json.Serialize(ViewBag.StatusData ?? new List<int>()));
+        const loadingEl = document.getElementById('dashboardLoading');
+        const refreshBtn = document.getElementById('refreshBtn');
 
-        var statusChart = new Chart(statusCtx, {
+        function toggleLoading(show) {
+            loadingEl.style.display = show ? 'block' : 'none';
+        }
+
+        function fetchData() {
+            toggleLoading(true);
+            return fetch('/api/dashboard-data')
+                .then(r => r.json())
+                .then(updateDashboard)
+                .catch(err => console.error('Dashboard fetch error', err))
+                .finally(() => toggleLoading(false));
+        }
+
+        function percentTooltip(ctx) {
+            const dataset = ctx.dataset;
+            const total = dataset.data.reduce((a, b) => a + (parseFloat(b) || 0), 0) || 0;
+            const value = dataset.data[ctx.dataIndex];
+            const pct = total ? ((value / total) * 100).toFixed(1) : 0;
+            return `${ctx.label}: ${value} (${pct}%)`;
+        }
+
+        // Initialize charts with server-provided data as seed
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusLabelsSeed = @Html.Raw(Json.Serialize(ViewBag.StatusLabels ?? new List<string>()));
+        const statusDataSeed = @Html.Raw(Json.Serialize(ViewBag.StatusData ?? new List<int>()));
+        const statusChart = new Chart(statusCtx, {
             type: 'pie',
             data: {
-                labels: statusLabels,
+                labels: statusLabelsSeed,
                 datasets: [{
-                    data: statusData,
+                    data: statusDataSeed,
                     backgroundColor: [
-                        '#dc3545', // Open - danger
-                        '#ffc107', // In Progress - warning
+                        '#ffc107', // Open - warning
+                        '#0dcaf0', // In Progress - info
                         '#0dcaf0', // Under Review - info
                         '#198754', // Resolved - success
                         '#6c757d'  // Closed - secondary
@@ -348,26 +137,24 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: percentTooltip } }
                 }
             }
         });
 
-        // Severity Chart
-        var severityCtx = document.getElementById('severityChart').getContext('2d');
-        var severityLabels = @Html.Raw(Json.Serialize(ViewBag.SeverityLabels ?? new List<string>()));
-        var severityData = @Html.Raw(Json.Serialize(ViewBag.SeverityData ?? new List<int>()));
-
-        var severityChart = new Chart(severityCtx, {
+        const severityCtx = document.getElementById('severityChart').getContext('2d');
+        const severityLabelsSeed = @Html.Raw(Json.Serialize(ViewBag.SeverityLabels ?? new List<string>()));
+        const severityDataSeed = @Html.Raw(Json.Serialize(ViewBag.SeverityData ?? new List<int>()));
+        const severityChart = new Chart(severityCtx, {
             type: 'bar',
             data: {
-                labels: severityLabels,
+                labels: severityLabelsSeed,
                 datasets: [{
                     label: 'Bugs by Severity',
-                    data: severityData,
+                    data: severityDataSeed,
                     backgroundColor: [
                         '#6c757d', // Low - secondary
                         '#0dcaf0', // Medium - info
@@ -378,20 +165,34 @@
             },
             options: {
                 responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: percentTooltip } } }
             }
         });
+
+        function updateDashboard(data) {
+            // metrics
+            document.getElementById('totalBugs').innerText = data.totalBugs;
+            document.getElementById('openBugs').innerText = data.openBugs;
+            document.getElementById('inProgressBugs').innerText = data.inProgressBugs;
+            document.getElementById('resolvedBugs').innerText = data.resolvedBugs;
+
+            // charts
+            statusChart.data.labels = data.statusLabels;
+            statusChart.data.datasets[0].data = data.statusData;
+            statusChart.update();
+
+            severityChart.data.labels = data.severityLabels;
+            severityChart.data.datasets[0].data = data.severityData;
+            severityChart.update();
+        }
+
+        // Events
+        if (refreshBtn) refreshBtn.addEventListener('click', fetchData);
+        // initial
+        fetchData();
+        // periodic refresh
+        setInterval(fetchData, 60000);
     </script>
 }

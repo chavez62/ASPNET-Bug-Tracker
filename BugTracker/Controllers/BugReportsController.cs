@@ -1,5 +1,4 @@
-﻿using BugTracker.Data;
-using BugTracker.Models;
+﻿using BugTracker.Models;
 using BugTracker.Models.Enums;
 using BugTracker.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -18,9 +17,10 @@ namespace BugTracker.Controllers
         private readonly IBugValidationService _validationService;
         private readonly IActivityLogService _activityLogService;
         private readonly IFileService _fileService;
+        private readonly ITagService _tagService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<BugReportsController> _logger;
-        private readonly ApplicationDbContext _context;
+        
 
         public BugReportsController(
             IBugService bugService,
@@ -29,7 +29,7 @@ namespace BugTracker.Controllers
             IFileService fileService,
             UserManager<ApplicationUser> userManager,
             ILogger<BugReportsController> logger,
-            ApplicationDbContext context)
+            ITagService tagService)
         {
             _bugService = bugService;
             _validationService = validationService;
@@ -37,7 +37,7 @@ namespace BugTracker.Controllers
             _fileService = fileService;
             _userManager = userManager;
             _logger = logger;
-            _context = context;
+            _tagService = tagService;
         }
 
         public async Task<IActionResult> Index(BugSearchModel searchModel = null, int page = 1)
@@ -53,11 +53,10 @@ namespace BugTracker.Controllers
 				if (searchModel.SelectedTags != null && searchModel.SelectedTags.Any())
 				{
 					var selectedIds = searchModel.SelectedTags.Distinct().ToList();
-					var selectedTags = await _context.Tags
-						.Where(t => selectedIds.Contains(t.Id))
+					var selectedTags = await _tagService.GetTagsByIdsAsync(selectedIds);
+					ViewBag.SelectedSearchTags = selectedTags
 						.Select(t => new { t.Id, t.Name, t.Color })
-						.ToListAsync();
-					ViewBag.SelectedSearchTags = selectedTags;
+						.ToList();
 				}
 
                 return View(new BugListViewModel
@@ -145,7 +144,7 @@ namespace BugTracker.Controllers
                 bugReport.CreatedDate = DateTime.UtcNow;
 
                 // Handle tag associations
-                await AttachTagsAsync(bugReport, SelectedTagIds);
+                bugReport.Tags = await _tagService.GetTagsByIdsAsync(SelectedTagIds ?? new List<int>());
 
                 // Create bug report
                 var createdBug = await _bugService.CreateBugReportAsync(bugReport);
@@ -300,36 +299,11 @@ namespace BugTracker.Controllers
             }
         }
 
-        private async Task<List<Tag>> GetTagsByIdsAsync(IEnumerable<int> tagIds)
-        {
-            if (tagIds == null)
-            {
-                return new List<Tag>();
-            }
-
-            var ids = tagIds.Distinct().ToList();
-            if (!ids.Any())
-            {
-                return new List<Tag>();
-            }
-
-            return await _context.Tags
-                .Where(t => ids.Contains(t.Id))
-                .OrderBy(t => t.Name)
-                .ToListAsync();
-        }
-
         private async Task PopulateSelectedTagsAsync(IEnumerable<int> tagIds)
         {
-            var tags = await GetTagsByIdsAsync(tagIds ?? Array.Empty<int>());
+            var tags = await _tagService.GetTagsByIdsAsync(tagIds ?? Array.Empty<int>());
             ViewBag.SelectedTagIds = tags.Select(t => t.Id).ToList();
             ViewBag.SelectedTags = tags;
-        }
-
-        private async Task AttachTagsAsync(BugReport bugReport, IEnumerable<int> tagIds)
-        {
-            var tags = await GetTagsByIdsAsync(tagIds ?? Array.Empty<int>());
-            bugReport.Tags = tags;
         }
 
         private async Task PopulateAttachmentsAsync(BugReport bugReport)
@@ -339,10 +313,7 @@ namespace BugTracker.Controllers
                 return;
             }
 
-            var attachments = await _context.BugAttachments
-                .Where(a => a.BugReportId == bugReport.Id)
-                .OrderByDescending(a => a.UploadDate)
-                .ToListAsync();
+            var attachments = await _fileService.GetAttachmentsForBugAsync(bugReport.Id);
 
             bugReport.Attachments = attachments;
             ViewBag.ExistingAttachments = attachments;
@@ -403,14 +374,14 @@ namespace BugTracker.Controllers
                 })
                 .ToListAsync();
 
-            var tags = await _context.Tags
+            var tags = (await _tagService.GetAllAsync())
                 .OrderBy(t => t.Name)
                 .Select(t => new SelectListItem
                 {
                     Value = t.Id.ToString(),
                     Text = t.Name
                 })
-                .ToListAsync();
+                .ToList();
 
             ViewBag.Users = new SelectList(users, "Value", "Text");
             ViewBag.Tags = new SelectList(tags, "Value", "Text");

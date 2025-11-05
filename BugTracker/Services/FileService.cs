@@ -1,6 +1,8 @@
 ﻿using BugTracker.Data;
 using BugTracker.Models;
 using BugTracker.Services;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Security;
 using System.Security.Cryptography;
 
@@ -273,6 +275,15 @@ public class FileService : IFileService
     public async Task<BugAttachment> GetAttachmentAsync(int attachmentId)
     {
         return await _context.BugAttachments.FindAsync(attachmentId);
+    }
+
+    public async Task<List<BugAttachment>> GetAttachmentsForBugAsync(int bugReportId)
+    {
+        return await _context.BugAttachments
+            .AsNoTracking()
+            .Where(a => a.BugReportId == bugReportId)
+            .OrderByDescending(a => a.UploadDate)
+            .ToListAsync();
     }
 
     public string GetFilePath(string fileName)

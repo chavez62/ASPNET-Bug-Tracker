@@ -53,6 +53,7 @@ builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IBugValidationService, BugValidationService>();
+builder.Services.AddScoped<ITagService, TagService>();
 
 // Add configuration validation
 builder.Services.AddSingleton<IConfigurationValidator, ConfigurationValidator>();

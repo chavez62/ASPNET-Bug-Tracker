@@ -15,8 +15,14 @@
 
     <!-- Search and Filter Panel -->
     <div class="mb-4">
+        <div class="d-md-none mb-2">
+            <button class="btn btn-light w-100" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-controls="filtersCollapse" aria-expanded="false">
+                <i class="bi bi-funnel me-1"></i> Filters
+            </button>
+        </div>
         <div class="card-body">
-            <form method="get" id="searchForm" class="row g-3">
+            <div id="filtersCollapse" class="collapse d-md-block">
+            <form method="get" id="searchForm" class="row g-3 align-items-end">
                 <!-- Search Bar -->
                 <div class="col-md-4">
                     <div class="input-group">
@@ -62,11 +68,27 @@
                     </select>
                 </div>
 
+                <div class="col-12 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light btn-sm" id="clearFiltersBtn">
+                            <i class="bi bi-x-circle me-1"></i> Clear
+                        </button>
+                    </div>
+                    @{
+                        var startItem = Model.TotalItems == 0 ? 0 : ((Model.CurrentPage - 1) * Model.PageSize) + 1;
+                        var endItem = Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalItems);
+                    }
+                    <div class="text-muted small">
+                        Showing @startItem–@endItem of @Model.TotalItems
+                    </div>
+                </div>
+
                 <!-- Hidden sort fields -->
                 <input type="hidden" name="SortBy" value="@Model.SearchModel.SortBy" id="sortBy">
                 <input type="hidden" name="SortDescending" value="@Model.SearchModel.SortDescending" id="sortDescending">
                 <input type="hidden" name="Page" value="@Model.CurrentPage" id="currentPage">
             </form>
+            </div>
         </div>
     </div>
 
@@ -82,35 +104,99 @@
             }
             else
             {
-                <div class="table-responsive">
-                    <table class="table table-hover">
+                <div class="table-responsive table-scroll">
+                    <table class="table table-hover table-sticky table-stack">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Title</th>
-                                <th>Status</th>
-                                <th>Severity</th>
-                                <th>Tags</th>
-                                <th>Assigned To</th>
-                                <th>Actions</th>
+                                <th scope="col" class="sortable" role="button" tabindex="0"
+                                    aria-sort="@(Model.SearchModel.SortBy == "Id" ? (Model.SearchModel.SortDescending ? "descending" : "ascending") : "none")"
+                                    onclick="updateSort('Id')" onkeypress="if(event.key==='Enter'||event.key===' '){updateSort('Id');}">
+                                    ID
+                                    @if (Model.SearchModel.SortBy == "Id")
+                                    {
+                                        <i class="bi bi-chevron-@(Model.SearchModel.SortDescending ? "down" : "up") ms-1"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-chevron-expand ms-1 text-muted"></i>
+                                    }
+                                </th>
+                                <th scope="col" class="sortable" role="button" tabindex="0"
+                                    aria-sort="@(Model.SearchModel.SortBy == "Title" ? (Model.SearchModel.SortDescending ? "descending" : "ascending") : "none")"
+                                    onclick="updateSort('Title')" onkeypress="if(event.key==='Enter'||event.key===' '){updateSort('Title');}">
+                                    Title
+                                    @if (Model.SearchModel.SortBy == "Title")
+                                    {
+                                        <i class="bi bi-chevron-@(Model.SearchModel.SortDescending ? "down" : "up") ms-1"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-chevron-expand ms-1 text-muted"></i>
+                                    }
+                                </th>
+                                <th scope="col" class="sortable" role="button" tabindex="0"
+                                    aria-sort="@(Model.SearchModel.SortBy == "Status" ? (Model.SearchModel.SortDescending ? "descending" : "ascending") : "none")"
+                                    onclick="updateSort('Status')" onkeypress="if(event.key==='Enter'||event.key===' '){updateSort('Status');}">
+                                    Status
+                                    @if (Model.SearchModel.SortBy == "Status")
+                                    {
+                                        <i class="bi bi-chevron-@(Model.SearchModel.SortDescending ? "down" : "up") ms-1"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-chevron-expand ms-1 text-muted"></i>
+                                    }
+                                </th>
+                                <th scope="col" class="sortable" role="button" tabindex="0"
+                                    aria-sort="@(Model.SearchModel.SortBy == "Severity" ? (Model.SearchModel.SortDescending ? "descending" : "ascending") : "none")"
+                                    onclick="updateSort('Severity')" onkeypress="if(event.key==='Enter'||event.key===' '){updateSort('Severity');}">
+                                    Severity
+                                    @if (Model.SearchModel.SortBy == "Severity")
+                                    {
+                                        <i class="bi bi-chevron-@(Model.SearchModel.SortDescending ? "down" : "up") ms-1"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-chevron-expand ms-1 text-muted"></i>
+                                    }
+                                </th>
+                                <th scope="col">Tags</th>
+                                <th scope="col" class="sortable" role="button" tabindex="0"
+                                    aria-sort="@(Model.SearchModel.SortBy == "AssignedTo" ? (Model.SearchModel.SortDescending ? "descending" : "ascending") : "none")"
+                                    onclick="updateSort('AssignedTo')" onkeypress="if(event.key==='Enter'||event.key===' '){updateSort('AssignedTo');}">
+                                    Assigned To
+                                    @if (Model.SearchModel.SortBy == "AssignedTo")
+                                    {
+                                        <i class="bi bi-chevron-@(Model.SearchModel.SortDescending ? "down" : "up") ms-1"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-chevron-expand ms-1 text-muted"></i>
+                                    }
+                                </th>
+                                <th scope="col">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var bug in Model.Bugs)
                             {
                                 <tr>
-                                    <td>@bug.Id</td>
-                                    <td>@bug.Title</td>
-                                    <td>
+                                    <td data-label="ID">@bug.Id</td>
+                                    <td data-label="Title">
+                                        <a asp-action="Details" asp-route-id="@bug.Id" class="bug-title-link">
+                                            <span class="bug-title" title="@bug.Title">@bug.Title</span>
+                                        </a>
+                                    </td>
+                                    <td data-label="Status">
                                         <span class="badge bg-@(bug.Status switch {
-                                            Status.Open => "danger",
-                                            Status.InProgress => "warning",
+                                            Status.Open => "warning",
+                                            Status.InProgress => "info",
                                             Status.UnderReview => "info",
                                             Status.Resolved => "success",
                                             _ => "secondary"
                                         })">@bug.Status</span>
                                     </td>
-                                    <td>
+                                    <td data-label="Severity">
                                         <span class="badge bg-@(bug.Severity switch {
                                             Severity.Critical => "danger",
                                             Severity.High => "warning",
@@ -118,12 +204,12 @@
                                             _ => "secondary"
                                         })">@bug.Severity</span>
                                     </td>
-                                    <td>
+                                    <td data-label="Tags">
                                         @if (bug.Tags.Any())
                                         {
                                             @foreach (var tag in bug.Tags)
                                             {
-                                                <span class="badge me-1" style="background-color: @tag.Color; color: @(tag.Color == "#FFFFFF" || tag.Color == "#ffffff" ? "#000000" : "#FFFFFF");">
+                                                <span class="badge tag-badge me-1" style="background-color: @tag.Color; color: @(tag.Color == "#FFFFFF" || tag.Color == "#ffffff" ? "#000000" : "#FFFFFF");">
                                                     @tag.Name
                                                 </span>
                                             }
@@ -133,7 +219,7 @@
                                             <span class="text-muted small">No tags</span>
                                         }
                                     </td>
-                                    <td>
+                                    <td data-label="Assigned To">
                                         @if (bug.AssignedTo != null)
                                         {
                                             @if (!string.IsNullOrEmpty(bug.AssignedTo.FirstName) && !string.IsNullOrEmpty(bug.AssignedTo.LastName))
@@ -150,14 +236,14 @@
                                             <span class="text-muted">Unassigned</span>
                                         }
                                     </td>
-                                    <td>
+                                    <td data-label="Actions" class="actions-cell">
                                         <div class="btn-group">
                                             <a asp-action="Details" asp-route-id="@bug.Id"
-                                               class="btn btn-sm btn-outline-primary">
+                                               class="btn btn-sm btn-outline-primary" aria-label="View bug @bug.Id">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             <a asp-action="Edit" asp-route-id="@bug.Id"
-                                               class="btn btn-sm btn-outline-secondary">
+                                               class="btn btn-sm btn-outline-secondary" aria-label="Edit bug @bug.Id">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             @if (User.IsInRole("Admin"))
@@ -166,7 +252,7 @@
                                                       style="display: inline;"
                                                       onsubmit="return confirm('Are you sure you want to delete this bug report?');">
                                                     @Html.AntiForgeryToken()
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete bug @bug.Id">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
@@ -182,10 +268,24 @@
                 <!-- Pagination -->
                 @if (Model.TotalPages > 1)
                 {
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                        <div class="text-muted small">
+                            Showing @(Model.TotalItems == 0 ? 0 : ((Model.CurrentPage - 1) * Model.PageSize) + 1)–@Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalItems) of @Model.TotalItems
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="pageSizeBottom" class="text-muted small mb-0">Page size</label>
+                            <select id="pageSizeBottom" name="PageSize" class="form-select form-select-sm" form="searchForm" style="width: auto;">
+                                <option value="10" selected="@(Model.PageSize == 10)">10</option>
+                                <option value="25" selected="@(Model.PageSize == 25)">25</option>
+                                <option value="50" selected="@(Model.PageSize == 50)">50</option>
+                                <option value="100" selected="@(Model.PageSize == 100)">100</option>
+                            </select>
+                        </div>
+                    </div>
                     <nav aria-label="Bug report navigation">
                         <ul class="pagination justify-content-center">
                             <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
-                                <a class="page-link" href="#" onclick="changePage(@(Model.CurrentPage - 1))">Previous</a>
+                                <a class="page-link" href="#" onclick="changePage(@(Model.CurrentPage - 1))" aria-disabled="@(!Model.HasPreviousPage)">Previous</a>
                             </li>
                             @for (int i = 1; i <= Model.TotalPages; i++)
                             {
@@ -194,7 +294,7 @@
                                 </li>
                             }
                             <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
-                                <a class="page-link" href="#" onclick="changePage(@(Model.CurrentPage + 1))">Next</a>
+                                <a class="page-link" href="#" onclick="changePage(@(Model.CurrentPage + 1))" aria-disabled="@(!Model.HasNextPage)">Next</a>
                             </li>
                         </ul>
                     </nav>
@@ -206,6 +306,16 @@
 
 @section Scripts {
     <script>
+        function showLoadingState() {
+            const tbody = document.querySelector('table tbody');
+            if (!tbody) return;
+            let rows = '';
+            for (let i = 0; i < 8; i++) {
+                rows += '<tr class="skeleton-row"><td colspan="7"><div class="skeleton-line"></div></td></tr>';
+            }
+            tbody.innerHTML = rows;
+        }
+
         function updateSort(column) {
             const currentSort = $('#sortBy').val();
             const isDescending = $('#sortDescending').val() === 'true';
@@ -216,7 +326,7 @@
                 $('#sortBy').val(column);
                 $('#sortDescending').val(false);
             }
-
+            $('#currentPage').val(1);
             $('#searchForm').submit();
         }
 
@@ -227,7 +337,11 @@
 
         // Auto-submit form when filters change
         $(document).ready(function() {
+            // skeleton on submit
+            $('#searchForm').on('submit', function() { showLoadingState(); });
+
             $('select:not(#tagFilter)').change(function() {
+                $('#currentPage').val(1);
                 $('#searchForm').submit();
             });
 
@@ -279,6 +393,26 @@
                     );
                 }
             }).on('change', function() {
+                $('#currentPage').val(1);
+                $('#searchForm').submit();
+            });
+
+            // Clear filters
+            $('#clearFiltersBtn').on('click', function() {
+                $('input[name="SearchTerm"]').val('');
+                $('select[name="Status"]').val('');
+                $('select[name="Severity"]').val('');
+                $('select[name="AssignedToId"]').val('');
+                $('#tagFilter').val(null).trigger('change');
+                $('#sortBy').val('');
+                $('#sortDescending').val(false);
+                $('#currentPage').val(1);
+                $('#searchForm').submit();
+            });
+
+            // Page size dropdown near pagination
+            $('#pageSizeBottom').on('change', function() {
+                $('#currentPage').val(1);
                 $('#searchForm').submit();
             });
         });
