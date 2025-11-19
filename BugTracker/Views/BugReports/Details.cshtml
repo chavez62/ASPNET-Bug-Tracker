@@ -569,13 +569,13 @@
                             </div>
                             <div class="metric">
                                 <small>Opened</small>
-                                <span>@Model.CreatedDate.ToString("MMM dd, yyyy · HH:mm")</span>
+                                <span>@DateTime.SpecifyKind(Model.CreatedDate, DateTimeKind.Utc).ToLocalTime().ToString("MMM dd, yyyy · HH:mm")</span>
                             </div>
                             @if (Model.UpdatedDate.HasValue)
                             {
                                 <div class="metric">
                                     <small>Last Updated</small>
-                                    <span>@Model.UpdatedDate.Value.ToString("MMM dd, yyyy · HH:mm")</span>
+                                    <span>@DateTime.SpecifyKind(Model.UpdatedDate.Value, DateTimeKind.Utc).ToLocalTime().ToString("MMM dd, yyyy · HH:mm")</span>
                                 </div>
                             }
                         </div>

@@ -43,6 +43,32 @@ public partial class BugService
         {
             bugReport.CreatedDate = DateTime.UtcNow;
 
+            // Ensure existing tags are attached rather than re-inserted
+            if (bugReport.Tags != null && bugReport.Tags.Any())
+            {
+                // Use only distinct existing tag IDs to build references
+                var existingTagIds = bugReport.Tags
+                    .Where(t => t != null && t.Id > 0)
+                    .Select(t => t.Id)
+                    .Distinct()
+                    .ToList();
+
+                var existingTagRefs = new List<Tag>(existingTagIds.Count);
+                foreach (var id in existingTagIds)
+                {
+                    var stub = new Tag { Id = id };
+                    _context.Attach(stub); // mark as Unchanged, do not insert
+                    existingTagRefs.Add(stub);
+                }
+
+                // Preserve any truly new tags (Id == 0) if provided
+                var newTags = bugReport.Tags
+                    .Where(t => t != null && t.Id == 0)
+                    .ToList();
+
+                bugReport.Tags = existingTagRefs.Concat(newTags).ToList();
+            }
+
             if (bugReport.ProjectId.HasValue)
             {
                 var projectExists = await _context.Projects
